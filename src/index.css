@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Colors */
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+  --color-tertiary: #f5f5f5;
+  --color-accent: #000000;
+  --color-accent-hover: #141414; /* 8% lighten approx */
+  --color-text-main: #000000;
+  --color-text-muted: #555555;
+  --color-border: #e0e0e0;
+  --color-error: #d93025;
+
+  /* Typography */
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --space-1: 0.5rem;   /* 8px */
+  --space-2: 1rem;     /* 16px */
+  --space-3: 1.5rem;   /* 24px */
+  --space-4: 2rem;     /* 32px */
+  --space-6: 3rem;     /* 48px */
+  --space-8: 4rem;     /* 64px */
+  --space-12: 6rem;    /* 96px */
+  --space-16: 8rem;    /* 128px */
+
+  /* Radii */
+  --radius-base: 8px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lift: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-base: 200ms ease-out;
+  --transition-slow: 420ms ease-out;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
+  line-height: 1.6;
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Classes */
+.text-hero {
+  font-weight: 700;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.text-h1 {
+  font-weight: 700;
+  font-size: 2.25rem;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.text-h2 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.text-body {
+  font-weight: 400;
+  font-size: 1rem;
+  max-width: 72ch;
+}
+
+.text-small {
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+/* Layout Utilities */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-2);
+}
+
+.section {
+  padding-top: clamp(4rem, 8vw, 8rem);
+  padding-bottom: clamp(4rem, 8vw, 8rem);
+}
+
+/* Components */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border-radius: var(--radius-base);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: none;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-hover);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-tertiary);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+.card {
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+/* Forms */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-secondary), 0 0 0 4px var(--color-accent);
+}
+
+.form-error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Animation Utilities */
+.animate-fade-up {
+  animation: fadeUp var(--transition-slow) forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger delays */
+.delay-100 { animation-delay: 80ms; }
+.delay-200 { animation-delay: 160ms; }
+.delay-300 { animation-delay: 240ms; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .grid-12 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Progress Button Liquid Fill */
+.btn-progress {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-tertiary);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: not-allowed;
+  padding: 12px;
+}
+
+.btn-progress .btn-text {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.progress-indicator {
+  position: absolute;
+  background: var(--color-accent);
+  transform-origin: center center;
+  opacity: 0.8;
+  animation: progress-wave-animation 8s linear infinite;
+  
+  width: 800px;
+  height: 800px;
+  border-radius: 38%;
+  
+  top: -375px; 
+  left: calc(var(--progress-value) * 1% - 800px);
+  z-index: 2;
+  transition: left 0.5s ease-out;
+}
+
+.progress-indicator:nth-child(2) {
+  background: var(--color-accent-hover);
+  animation-duration: 12s;
+  border-radius: 42%;
+  opacity: 0.6;
+  left: calc(var(--progress-value) * 1% - 810px);
+}
+
+@keyframes progress-wave-animation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Custom Tooltip */
+.custom-tooltip-container {
+  position: relative;
+}
+
+.custom-tooltip-content {
+  visibility: hidden;
+  opacity: 0;
+  width: 220px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary);
+  text-align: center;
+  border-radius: var(--radius-base);
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 100;
+  bottom: 130%;
+  left: 16px;
+  transition: opacity 150ms ease-in-out, visibility 150ms ease-in-out;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lift);
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+.custom-tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 20px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-primary) transparent transparent transparent;
+}
+
+.custom-tooltip-container:hover .custom-tooltip-content {
+  visibility: visible;
+  opacity: 1;
+}
+
