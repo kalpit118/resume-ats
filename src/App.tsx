@@ -735,8 +735,8 @@ function App() {
               <button className="btn btn-secondary" onClick={() => {
                 setEditableResume(getFinalResumeContent());
                 setIsEditorOpen(true);
-              }}>Edit Manually (Phase 5)</button>
-              <button className="btn btn-primary" onClick={() => handleExport('PDF')}>Export to PDF (Phase 6)</button>
+              }}>Edit Manually</button>
+              <button className="btn btn-primary" onClick={() => handleExport('PDF')}>Export to PDF</button>
               <button className="btn btn-secondary" onClick={() => handleExport('TXT')}>Export TXT</button>
             </div>
           </div>
