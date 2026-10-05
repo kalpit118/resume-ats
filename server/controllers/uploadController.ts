@@ -163,6 +163,8 @@ export const processUpload = async (req: Request, res: Response) => {
     if (error.message) {
       if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('stream timeout') || error.message.includes('UND_ERR_INFO')) {
         errorMessage = error.message.includes('NIM API request') ? error.message : 'AI provider request timed out. Please try again or switch to a faster model.';
+      } else if (error.message.includes('404') || error.message.includes('Not Found') || error.message.includes('Not found for account')) {
+        errorMessage = 'Model not found or not available for your account. Please select a different model in AI Configuration.';
       } else if (error.message.includes('401') || error.message.includes('403') || error.message.includes('invalid_api_key')) {
         errorMessage = 'Invalid API Key. Please check your AI provider API key and ensure it has access to the selected model.';
       } else if (error.message.includes('429') || error.message.includes('rate limit')) {
