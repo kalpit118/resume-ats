@@ -27,21 +27,23 @@ interface Change {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Strip inline LaTeX commands so plain text can be compared. */
-function stripLatexFormatting(s: string): string {
-  return s
-    .replace(/\\textbf\{([^}]+)\}/g, '$1')
-    .replace(/\\textit\{([^}]+)\}/g, '$1')
-    .replace(/\\emph\{([^}]+)\}/g, '$1')
-    .replace(/\\underline\{([^}]+)\}/g, '$1')
-    .replace(/\\texttt\{([^}]+)\}/g, '$1')
-    .replace(/\\textrm\{([^}]+)\}/g, '$1')
-    .replace(/\\textsc\{([^}]+)\}/g, '$1')
-    .replace(/\\href\{[^}]+\}\{([^}]+)\}/g, '$1')
-    .replace(/\\url\{[^}]+\}/g, '')
-    .replace(/\\[a-zA-Z]+\{([^}]*)\}/g, '$1') // generic unknown commands — keep content
+/** Strip LaTeX commands and macros so clean plain text is produced. */
+export function stripLatexFormatting(s: string): string {
+  if (!s || typeof s !== 'string') return '';
+  let res = s;
+  // Multiple passes to unwrap nested commands e.g. \textbf{\textit{...}}
+  for (let i = 0; i < 3; i++) {
+    res = res
+      .replace(/\\(?:textbf|textit|emph|underline|texttt|textrm|textsc)\{([^}]*)\}/gi, '$1')
+      .replace(/\\href\{[^}]*\}\{([^}]*)\}/gi, '$1')
+      .replace(/\\url\{[^}]*\}/gi, '')
+      .replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?\{([^}]*)\}/g, '$1');
+  }
+  return res
+    .replace(/\\(?:item|resumeItem|cvitem|cvlistitem|denseitem|entry)\b\s*/gi, '')
+    .replace(/\\[a-zA-Z]+\b/g, '')
     .replace(/\\\\/g, ' ')
-    .replace(/[{}]/g, ' ')
+    .replace(/[{}]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -148,20 +150,26 @@ function replaceInLatex(latexSource: string, original: string, optimized: string
     const firstLine = lines[bestStart];
     const leadingMacro = extractLeadingMacro(firstLine);
 
+    // Ensure the optimized text to insert does not repeat any macro command
+    const cleanOptimized = stripLatexFormatting(optimized);
+
     let replacement: string;
     if (leadingMacro && leadingMacro.endsWith('{')) {
       // The macro opens a brace group. Replace the content inside those braces
-      // with the optimized text, keeping the macro command intact.
       // e.g.  "  \resumeItem{old content}" → "  \resumeItem{new content}"
       const macroEnd = firstLine.indexOf(leadingMacro) + leadingMacro.length; // index after '{'
       const closingBrace = firstLine.lastIndexOf('}');
       const prefix = firstLine.substring(0, macroEnd);  // everything up to and including '{'
-      const suffix = closingBrace > macroEnd ? '}' : ''; // closing brace if it was on this line
-      replacement = prefix + optimized + suffix;
+      const suffix = closingBrace > macroEnd ? '}' : (firstLine.includes('}') ? '}' : '}');
+      replacement = prefix + cleanOptimized + suffix;
     } else if (leadingMacro) {
-      replacement = leadingMacro + optimized;
+      // e.g. "\item old content" → "\item new content"
+      const macroPrefix = leadingMacro.endsWith(' ') ? leadingMacro : leadingMacro + ' ';
+      replacement = macroPrefix + cleanOptimized;
     } else {
-      replacement = optimized;
+      // Check indentation of firstLine to preserve it
+      const indent = firstLine.match(/^(\s*)/)?.[1] || '';
+      replacement = indent + cleanOptimized;
     }
 
     // Replace the matched span with the single replacement line

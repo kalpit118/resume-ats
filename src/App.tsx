@@ -1,6 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, ChevronRight, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
 
+// Strips LaTeX commands & macros so plain text is cleanly presented in the UI
+function cleanLatex(s: string): string {
+  if (!s || typeof s !== 'string') return '';
+  let res = s;
+  for (let i = 0; i < 3; i++) {
+    res = res
+      .replace(/\\(?:textbf|textit|emph|underline|texttt|textrm|textsc)\{([^}]*)\}/gi, '$1')
+      .replace(/\\href\{[^}]*\}\{([^}]*)\}/gi, '$1')
+      .replace(/\\url\{[^}]*\}/gi, '')
+      .replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?\{([^}]*)\}/g, '$1');
+  }
+  return res
+    .replace(/\\(?:item|resumeItem|cvitem|cvlistitem|denseitem|entry)\b\s*/gi, '')
+    .replace(/\\[a-zA-Z]+\b/g, '')
+    .replace(/\\\\/g, ' ')
+    .replace(/[{}]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function App() {
   const [step, setStep] = useState(1);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -643,7 +663,7 @@ function App() {
                       {/* Original */}
                       <div style={{ backgroundColor: 'var(--color-tertiary)', padding: 'var(--space-2)', borderRadius: '4px' }}>
                         <div className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>Original</div>
-                        <div className="text-body" style={{ fontSize: '0.9rem', textDecoration: isAccepted ? 'line-through' : 'none', opacity: isAccepted ? 0.6 : 1 }}>{plan.original}</div>
+                        <div className="text-body" style={{ fontSize: '0.9rem', textDecoration: isAccepted ? 'line-through' : 'none', opacity: isAccepted ? 0.6 : 1 }}>{cleanLatex(plan.original)}</div>
                       </div>
 
                       {/* Optimized — with pencil icon */}
@@ -701,7 +721,7 @@ function App() {
                           </div>
                         ) : (
                           <div className="text-body" style={{ fontSize: '0.9rem', opacity: isAccepted ? 1 : 0.5, whiteSpace: 'pre-wrap' }}>
-                            {displayOptimized}
+                            {cleanLatex(displayOptimized)}
                           </div>
                         )}
                       </div>

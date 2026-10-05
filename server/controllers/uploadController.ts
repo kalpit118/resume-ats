@@ -10,6 +10,7 @@ import { calculateScore } from '../engines/score/index.js';
 import { getAIProvider } from '../providers/index.js';
 import { generateOptimizationPlan } from '../engines/optimization/index.js';
 import { validateChanges } from '../engines/evidence/index.js';
+import { stripLatexFormatting } from '../engines/export/applyLatexChanges.js';
 
 export const processUpload = async (req: Request, res: Response) => {
   try {
@@ -136,8 +137,37 @@ export const processUpload = async (req: Request, res: Response) => {
 
     const validatedPlan = sanitizedPlan.map((change: any, index: number) => ({
       ...change,
+      // Store raw strings in case needed for literal LaTeX replacement,
+      // but ensure original and optimized are stripped of LaTeX commands for UI display
+      rawOriginal: change.original,
+      rawOptimized: change.optimized,
+      original: stripLatexFormatting(change.original),
+      optimized: stripLatexFormatting(change.optimized),
       validation: validations[index] || { isValid: false, reasoning: 'Validation failed or missing', requiresUserConfirmation: true }
     }));
+
+    // Clean LaTeX commands from parsed profile so editor & manual fields are readable plain text
+    const cleanProfile = (prof: any) => {
+      if (!prof) return prof;
+      const clean = JSON.parse(JSON.stringify(prof));
+      if (clean.summary) clean.summary = stripLatexFormatting(clean.summary);
+      if (Array.isArray(clean.sections)) {
+        clean.sections = clean.sections.map((sec: any) => {
+          if (!sec || !Array.isArray(sec.items)) return sec;
+          sec.items = sec.items.map((item: any) => {
+            if (item.title) item.title = stripLatexFormatting(item.title);
+            if (item.subtitle) item.subtitle = stripLatexFormatting(item.subtitle);
+            if (item.content) item.content = stripLatexFormatting(item.content);
+            if (Array.isArray(item.bullets)) {
+              item.bullets = item.bullets.map((b: string) => stripLatexFormatting(b));
+            }
+            return item;
+          });
+          return sec;
+        });
+      }
+      return clean;
+    };
 
     res.json({
       success: true,
@@ -146,7 +176,7 @@ export const processUpload = async (req: Request, res: Response) => {
         matches,
         providerUsed: provider.getProviderName(),
         validatedPlan,
-        profile: optimizationResult.profile,
+        profile: cleanProfile(optimizationResult.profile),
         rawText: resumeText,
         // rawLatex is non-null only when a .tex file was uploaded — used for LaTeX-to-PDF export
         rawLatex: rawLatex ?? undefined,
