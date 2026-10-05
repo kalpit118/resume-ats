@@ -161,7 +161,9 @@ export const processUpload = async (req: Request, res: Response) => {
     
     let errorMessage = 'Internal server error processing the files';
     if (error.message) {
-      if (error.message.includes('401') || error.message.includes('403') || error.message.includes('invalid_api_key')) {
+      if (error.name === 'AbortError' || error.message.includes('timed out') || error.message.includes('stream timeout') || error.message.includes('UND_ERR_INFO')) {
+        errorMessage = error.message.includes('NIM API request') ? error.message : 'AI provider request timed out. Please try again or switch to a faster model.';
+      } else if (error.message.includes('401') || error.message.includes('403') || error.message.includes('invalid_api_key')) {
         errorMessage = 'Invalid API Key. Please check your AI provider API key and ensure it has access to the selected model.';
       } else if (error.message.includes('429') || error.message.includes('rate limit')) {
         errorMessage = 'Rate limit exceeded for the AI provider. Please try again later or check your billing.';
