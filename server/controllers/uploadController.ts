@@ -52,9 +52,9 @@ export const processUpload = async (req: Request, res: Response) => {
           return res.status(400).json({ error: 'Unsupported file format: ' + mimetype });
         }
       } finally {
-        // Clean up uploaded file
+        // Clean up uploaded file, EXCEPT for PDFs which we need for in-place export
         try {
-          if (fs.existsSync(filePath)) {
+          if (mimetype !== 'application/pdf' && fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
           }
         } catch (unlinkErr) {
@@ -181,6 +181,7 @@ export const processUpload = async (req: Request, res: Response) => {
         // rawLatex is non-null only when a .tex file was uploaded — used for LaTeX-to-PDF export
         rawLatex: rawLatex ?? undefined,
         isLatexSource: rawLatex !== null,
+        originalPdfPath: req.file && req.file.mimetype === 'application/pdf' ? req.file.filename : undefined,
         message: 'Phase 4: AI Optimization & Evidence Guard executed',
       }
     });

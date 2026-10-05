@@ -322,7 +322,8 @@ function App() {
           format,
           resumeContent: getFinalResumeContent(),
           rawLatex: (format === 'PDF' && isLatexSource && rawLatex) ? rawLatex : undefined,
-          changes: isLatexSource ? changes : undefined,
+          originalPdfPath: analysisResult?.data?.originalPdfPath,
+          changes: changes,
           template: 'SwissModernism'
         }),
       });

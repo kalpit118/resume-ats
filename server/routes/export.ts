@@ -47,8 +47,41 @@ router.post('/', async (req: Request, res: Response) => {
           res.setHeader('Content-Type', 'application/pdf');
           res.setHeader('Content-Disposition', 'attachment; filename=resume.pdf');
           return res.send(pdfBuffer);
+        } else if (req.body.originalPdfPath) {
+          console.log('[Export] originalPdfPath present — attempting in-place PyMuPDF edit.');
+          const path = await import('path');
+          const fs = await import('fs');
+          const { execFile } = await import('child_process');
+          const { promisify } = await import('util');
+          const execFileAsync = promisify(execFile);
+          
+          const inputPdfPath = path.join(process.cwd(), 'uploads', req.body.originalPdfPath);
+          const tempOutputPdfPath = path.join(process.cwd(), 'uploads', `edited_${Date.now()}.pdf`);
+          const tempChangesPath = path.join(process.cwd(), 'uploads', `changes_${Date.now()}.json`);
+          
+          try {
+            // Write changes to temp file
+            fs.writeFileSync(tempChangesPath, JSON.stringify(req.body.changes || []));
+            
+            // Call Python script
+            const scriptPath = path.join(process.cwd(), 'server', 'engines', 'export', 'edit_pdf.py');
+            await execFileAsync('python', [scriptPath, inputPdfPath, tempOutputPdfPath, tempChangesPath]);
+            
+            // Read back the edited PDF
+            const pdfBuffer = fs.readFileSync(tempOutputPdfPath);
+            console.log('[Export] PyMuPDF edited successfully, size:', pdfBuffer.length);
+            
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=resume.pdf');
+            res.send(pdfBuffer);
+          } finally {
+            // Cleanup temp files
+            if (fs.existsSync(tempOutputPdfPath)) fs.unlinkSync(tempOutputPdfPath);
+            if (fs.existsSync(tempChangesPath)) fs.unlinkSync(tempChangesPath);
+          }
+          return;
         } else {
-          console.log('[Export] No rawLatex in request — using standard PDF exporter.');
+          console.log('[Export] No rawLatex or originalPdfPath — using standard PDF exporter.');
         }
         
         // Default or fallback PDF exporter (Puppeteer HTML-to-PDF)
