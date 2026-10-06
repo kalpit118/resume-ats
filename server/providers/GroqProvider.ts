@@ -20,6 +20,7 @@ export class GroqProvider implements AIProvider {
         model: this.model,
         response_format: { type: 'json_object' },
         temperature: 0.1,
+        max_tokens: 4096,
       });
 
       const content = response.choices[0]?.message?.content || '{}';
@@ -48,6 +49,7 @@ export class GroqProvider implements AIProvider {
         ],
         model: this.model,
         temperature: 0.3,
+        max_tokens: 4096,
       });
 
       return response.choices[0]?.message?.content || '';
