@@ -14,7 +14,8 @@ export const extractKeywordsLocal = (text: string): string[] => {
   const extracted = new Set<string>();
 
   for (const skill of commonSkills) {
-    if (textLower.includes(skill)) {
+    const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (regex.test(textLower)) {
       extracted.add(skill);
     }
   }

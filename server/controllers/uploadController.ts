@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const { PDFParse } = require('pdf-parse');
 const mammoth = require('mammoth');
 import { extractKeywordsLocal } from '../engines/jd-parser/local.js';
+import { extractKeywordsAI } from '../engines/jd-parser/ai.js';
 import { performMatching } from '../engines/matching/index.js';
 import { calculateScore } from '../engines/score/index.js';
 import { getAIProvider } from '../providers/index.js';
@@ -71,9 +72,24 @@ export const processUpload = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No job description provided' });
     }
 
+    // Setup AI Provider early so we can use it for both JD parsing and optimization
+    const providerConfig = {
+      provider: req.body.aiProvider,
+      apiKey: req.body.aiApiKey,
+      model: req.body.aiModel
+    };
+    const provider = getAIProvider(providerConfig);
+
     // PHASE 2 Pipeline:
     // 1. Extract Keywords from JD
-    const jdRequirements = extractKeywordsLocal(jdText);
+    let jdRequirements: string[] = [];
+    try {
+      jdRequirements = await extractKeywordsAI(provider, jdText);
+    } catch (e) {
+      console.warn("Falling back to local keyword extraction...");
+      jdRequirements = extractKeywordsLocal(jdText);
+    }
+
     
     // 2. Perform Matching
     const matches = performMatching(jdRequirements, resumeText);
@@ -81,13 +97,7 @@ export const processUpload = async (req: Request, res: Response) => {
     // 3. Calculate Score
     const scoreBreakdown = calculateScore(matches);
 
-    // PHASE 4: AI Optimization & Evidence Guard
-    const providerConfig = {
-      provider: req.body.aiProvider,
-      apiKey: req.body.aiApiKey,
-      model: req.body.aiModel
-    };
-    const provider = getAIProvider(providerConfig);
+// PHASE 4: AI Optimization & Evidence Guard
     
     // Generate the rewrite plan
     const optimizationResult = await generateOptimizationPlan(provider, {
