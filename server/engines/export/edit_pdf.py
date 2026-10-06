@@ -83,24 +83,59 @@ def apply_changes(input_pdf_path, output_pdf_path, changes_json_path):
             groups = group_quads(text_instances)
             
             for group in groups:
-                # 1. Apply redactions for all quads in this group
-                for quad in group:
-                    page.add_redact_annot(quad, fill=(1, 1, 1))
-                page.apply_redactions()
-                
-                # 2. Calculate the bounding box for the entire paragraph
+                # 1. Determine bounding box and original font properties
                 rects = [q.rect for q in group]
                 x0 = min(r.x0 for r in rects)
                 y0 = min(r.y0 for r in rects)
                 x1 = max(r.x1 for r in rects)
                 
-                # Font size derived from the first line's height
                 first_rect = min(rects, key=lambda r: r.y0)
-                fontsize = first_rect.height * 0.8
+                true_fontsize = first_rect.height * 0.8
+                true_fontname = "times-roman"
+                
+                text_dict = page.get_text("dict")
+                found_font = False
+                for block in text_dict.get("blocks", []):
+                    if found_font: break
+                    if "lines" not in block: continue
+                    for line in block["lines"]:
+                        if found_font: break
+                        for span in line["spans"]:
+                            span_rect = fitz.Rect(span["bbox"])
+                            if span_rect.intersects(first_rect):
+                                true_fontsize = span["size"]
+                                font_lower = span["font"].lower()
+                                
+                                is_bold = "bold" in font_lower or "bd" in font_lower
+                                is_italic = "italic" in font_lower or "it" in font_lower
+                                
+                                if "sans" in font_lower or "arial" in font_lower or "helv" in font_lower:
+                                    base_font = "helv"
+                                elif "courier" in font_lower or "mono" in font_lower:
+                                    base_font = "courier"
+                                else:
+                                    base_font = "times"
+                                    
+                                if is_bold and is_italic:
+                                    true_fontname = f"{base_font}-bolditalic" if base_font == "times" else f"{base_font}-boldoblique"
+                                elif is_bold:
+                                    true_fontname = f"{base_font}-bold"
+                                elif is_italic:
+                                    true_fontname = f"{base_font}-italic" if base_font == "times" else f"{base_font}-oblique"
+                                else:
+                                    true_fontname = "times-roman" if base_font == "times" else base_font
+                                
+                                found_font = True
+                                break
+                                
+                # 2. Apply redactions for all quads in this group
+                for quad in group:
+                    page.add_redact_annot(quad, fill=(1, 1, 1))
+                page.apply_redactions()
                 
                 # 3. Insert the new text ONCE for the entire group
                 expanded_rect = fitz.Rect(x0, y0, x1 + 10, y0 + 500)
-                page.insert_textbox(expanded_rect, insert_text, fontname="times-roman", fontsize=fontsize, color=(0, 0, 0), align=0)
+                page.insert_textbox(expanded_rect, insert_text, fontname=true_fontname, fontsize=true_fontsize, color=(0, 0, 0), align=0)
 
     doc.save(output_pdf_path)
 
