@@ -1,6 +1,24 @@
 import sys
 import json
+import re
 import fitz  # PyMuPDF
+
+def sanitize_text(text):
+    # Replace smart quotes and special dashes with standard ascii equivalents to avoid encoding/font issues
+    replacements = {
+        '\u2018': "'", '\u2019': "'",
+        '\u201C': '"', '\u201D': '"',
+        '\u2010': '-', '\u2011': '-', '\u2012': '-', '\u2013': '-', '\u2014': '-',
+        '\u00AD': '-', # soft hyphen
+    }
+    for k, v in replacements.items():
+        text = text.replace(k, v)
+    return text
+
+def strip_bullets(text):
+    # Remove leading bullets, spaces, and non-alphanumeric chars
+    # This allows search_for to find the core text even if bullet symbols differ
+    return re.sub(r'^[^a-zA-Z0-9(]+', '', text)
 
 def group_quads(quads):
     # Sort quads primarily by y0, then x0
@@ -45,8 +63,19 @@ def apply_changes(input_pdf_path, output_pdf_path, changes_json_path):
         if not original or original == modified:
             continue
             
+        original_clean = sanitize_text(original)
+        modified_clean = sanitize_text(modified)
+        
+        search_target = strip_bullets(original_clean)
+        insert_text = strip_bullets(modified_clean)
+        
+        if not search_target:
+            search_target = original_clean
+        if not insert_text:
+            insert_text = modified_clean
+            
         for page in doc:
-            text_instances = page.search_for(original, quads=True)
+            text_instances = page.search_for(search_target, quads=True)
             
             if not text_instances:
                 continue
@@ -67,11 +96,11 @@ def apply_changes(input_pdf_path, output_pdf_path, changes_json_path):
                 
                 # Font size derived from the first line's height
                 first_rect = min(rects, key=lambda r: r.y0)
-                fontsize = first_rect.height * 0.75
+                fontsize = first_rect.height * 0.8
                 
                 # 3. Insert the new text ONCE for the entire group
                 expanded_rect = fitz.Rect(x0, y0, x1 + 10, y0 + 500)
-                page.insert_textbox(expanded_rect, modified, fontsize=fontsize, color=(0, 0, 0), align=0)
+                page.insert_textbox(expanded_rect, insert_text, fontname="times-roman", fontsize=fontsize, color=(0, 0, 0), align=0)
 
     doc.save(output_pdf_path)
 
