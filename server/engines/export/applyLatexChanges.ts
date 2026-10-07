@@ -80,7 +80,7 @@ function similarity(a: string, b: string): number {
  * e.g. "  \\resumeItem{" from "  \\resumeItem{Built a portfolio website...}"
  */
 function extractLeadingMacro(line: string): string | null {
-  const m = line.match(/^(\s*\\(?:item|resumeItem|cvitem|cvlistitem|entry|denseitem)[^{]*\{?)/i);
+  const m = line.match(/^(\s*\\(?:item|resumeItem|cvitem|cvlistitem|entry|denseitem)(?:\[[^\]]*\])?\s*\{?)/i);
   return m ? m[1] : null;
 }
 
@@ -150,8 +150,16 @@ function replaceInLatex(latexSource: string, original: string, optimized: string
     const firstLine = lines[bestStart];
     const leadingMacro = extractLeadingMacro(firstLine);
 
-    // Ensure the optimized text to insert does not repeat any macro command
-    const cleanOptimized = stripLatexFormatting(optimized);
+    // Ensure the optimized text to insert does not repeat the structural macro
+    // We DO NOT want to strip inline formatting like \textbf{} here, as we want to preserve it!
+    let cleanOptimized = optimized.trim();
+    const aiLeading = extractLeadingMacro(cleanOptimized);
+    if (aiLeading) {
+      cleanOptimized = cleanOptimized.substring(aiLeading.length).trim();
+      if (aiLeading.endsWith('{') && cleanOptimized.endsWith('}')) {
+        cleanOptimized = cleanOptimized.substring(0, cleanOptimized.length - 1);
+      }
+    }
 
     let replacement: string;
     if (leadingMacro && leadingMacro.endsWith('{')) {
