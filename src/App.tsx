@@ -664,7 +664,7 @@ function App() {
                       {/* Original */}
                       <div style={{ backgroundColor: 'var(--color-tertiary)', padding: 'var(--space-2)', borderRadius: '4px' }}>
                         <div className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>Original</div>
-                        <div className="text-body" style={{ fontSize: '0.9rem', textDecoration: isAccepted ? 'line-through' : 'none', opacity: isAccepted ? 0.6 : 1 }}>{cleanLatex(plan.original)}</div>
+                        <div className="text-body" style={{ fontSize: '0.9rem', opacity: isAccepted ? 0.6 : 1 }}>{cleanLatex(plan.original)}</div>
                       </div>
 
                       {/* Optimized — with pencil icon */}
