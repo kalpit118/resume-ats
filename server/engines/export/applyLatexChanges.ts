@@ -94,9 +94,43 @@ function isStructuralLine(line: string): boolean {
   );
 }
 
+
+/**
+ * Smartly transfers inline formatting (like \textbf{}, \textit{}) from the original LaTeX 
+ * source to the AI's plain-text optimized string, matching exact phrases or words.
+ */
+function transferInlineFormatting(originalLatex: string, optimizedPlain: string): string {
+  let result = optimizedPlain;
+  const regex = /(\\(?:textbf|textit|emph|underline|texttt|textrm|textsc))\{([^}]+)\}/gi;
+  let match;
+  const formats: { macro: string; content: string }[] = [];
+  
+  while ((match = regex.exec(originalLatex)) !== null) {
+    formats.push({ macro: match[1], content: match[2] });
+  }
+  
+  // Sort by length descending to replace longer strings first (avoids double wrapping partials)
+  formats.sort((a, b) => b.content.length - a.content.length);
+  
+  for (const { macro, content } of formats) {
+    const escaped = content.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+    const searchRegex = new RegExp(`(?<=^|\\W)(${escaped})(?=\\W|$)`, 'gi');
+    
+    result = result.replace(searchRegex, (fullMatch, p1, offset, string) => {
+      const before = string.substring(0, offset);
+      if (before.endsWith(`${macro}{`) && string[offset + fullMatch.length] === '}') {
+        return fullMatch; // already wrapped!
+      }
+      return `${macro}{${fullMatch}}`;
+    });
+  }
+  return result;
+}
+
 // ---------------------------------------------------------------------------
 // Core replacement function
 // ---------------------------------------------------------------------------
+
 
 function replaceInLatex(latexSource: string, original: string, optimized: string): string {
 
@@ -160,6 +194,10 @@ function replaceInLatex(latexSource: string, original: string, optimized: string
         cleanOptimized = cleanOptimized.substring(0, cleanOptimized.length - 1);
       }
     }
+
+    // Smartly transfer inline formatting from the original matched LaTeX to the AI's optimized text
+    const originalMatchedLatex = lines.slice(bestStart, bestEnd + 1).join('\n');
+    cleanOptimized = transferInlineFormatting(originalMatchedLatex, cleanOptimized);
 
     let replacement: string;
     if (leadingMacro && leadingMacro.endsWith('{')) {
