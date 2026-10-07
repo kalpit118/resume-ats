@@ -100,8 +100,12 @@ export const processUpload = async (req: Request, res: Response) => {
 // PHASE 4: AI Optimization & Evidence Guard
     
     // Generate the rewrite plan
+    // If it's a LaTeX file, we must clean it up first before passing it to the AI to prevent 
+    // it from hallucinating structural tags (like egin{highlights}) into its text extraction.
+    const cleanResumeText = rawLatex ? stripLatexFormatting(resumeText) : resumeText;
+    
     const optimizationResult = await generateOptimizationPlan(provider, {
-      resumeText,
+      resumeText: cleanResumeText,
       jdText,
       rules
     });

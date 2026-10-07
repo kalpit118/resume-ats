@@ -31,6 +31,10 @@ interface Change {
 export function stripLatexFormatting(s: string): string {
   if (!s || typeof s !== 'string') return '';
   let res = s;
+  
+  // First, completely remove structural environment tags so their names don't leak into text
+  res = res.replace(/\\(?:begin|end)\{[^}]+\}/gi, '');
+  
   // Multiple passes to unwrap nested commands e.g. \textbf{\textit{...}}
   for (let i = 0; i < 3; i++) {
     res = res
@@ -41,6 +45,7 @@ export function stripLatexFormatting(s: string): string {
   }
   return res
     .replace(/\\(?:item|resumeItem|cvitem|cvlistitem|denseitem|entry)\b\s*/gi, '')
+    // Remove structural macros like \resumeItemListStart without leaving their names
     .replace(/\\[a-zA-Z]+\b/g, '')
     .replace(/\\\\/g, ' ')
     .replace(/[{}]/g, '')
