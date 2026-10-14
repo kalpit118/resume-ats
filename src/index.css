@@ -530,7 +530,9 @@ body {
   height: var(--checkbox-size);
   border-radius: 6px;
   transition: transform 0.2s ease;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .checkbox-bg {
@@ -547,20 +549,20 @@ body {
 }
 
 .checkbox-icon {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 80%;
-  height: 80%;
+  position: relative;
+  z-index: 1;
+  width: 75%;
+  height: 75%;
   color: white;
   transform: scale(0);
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
+  display: block;
 }
 
 .check-path {
-  stroke-dasharray: 40;
-  stroke-dashoffset: 40;
-  transition: stroke-dashoffset 0.3s ease 0.1s;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  transition: stroke-dashoffset 0.25s ease 0.05s;
 }
 
 /* Checked State */
