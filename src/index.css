@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Colors */
+  /* Colors — Light (default) */
   --color-primary: #000000;
   --color-secondary: #ffffff;
   --color-tertiary: #f5f5f5;
   --color-accent: #000000;
-  --color-accent-hover: #141414; /* 8% lighten approx */
+  --color-accent-hover: #141414;
   --color-text-main: #000000;
   --color-text-muted: #555555;
   --color-border: #e0e0e0;
@@ -17,14 +17,14 @@
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Spacing */
-  --space-1: 0.5rem;   /* 8px */
-  --space-2: 1rem;     /* 16px */
-  --space-3: 1.5rem;   /* 24px */
-  --space-4: 2rem;     /* 32px */
-  --space-6: 3rem;     /* 48px */
-  --space-8: 4rem;     /* 64px */
-  --space-12: 6rem;    /* 96px */
-  --space-16: 8rem;    /* 128px */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+  --space-12: 6rem;
+  --space-16: 8rem;
 
   /* Radii */
   --radius-base: 8px;
@@ -36,6 +36,138 @@
   /* Transitions */
   --transition-base: 200ms ease-out;
   --transition-slow: 420ms ease-out;
+}
+
+/* ── Dark Theme ─────────────────────────────────────────────────────── */
+:root.dark {
+  --color-primary: #ffffff;
+  --color-secondary: #121212;
+  --color-tertiary: #1e1e1e;
+  --color-accent: #ffffff;
+  --color-accent-hover: #e0e0e0;
+  --color-text-main: #e8e8e8;
+  --color-text-muted: #9e9e9e;
+  --color-border: #2e2e2e;
+  --color-error: #f28b82;
+
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lift: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Theme Toggle Switch (adapted from Uiverse.io / Nagalapuramhareeswar) ── */
+.theme-toggle {
+  position: relative;
+  height: 40px;
+  width: 40px;
+  display: inline-block;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-toggle .theme-toggle__button {
+  transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow:
+    0 6px 10px -2px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 2px -1px rgba(0, 0, 0, 0.2),
+    0 -4px 6px -1px rgba(255, 255, 255, 0.6),
+    inset 0 1px 2px -1px rgba(255, 255, 255, 0.2),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.8),
+    inset 0 8px 12px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 28px;
+  position: absolute;
+  background: #eaeaea;
+  display: block;
+  height: 28px;
+  width: 28px;
+  left: 50%;
+  top: 50%;
+  margin-left: -14px;
+  margin-top: -14px;
+}
+
+:root.dark .theme-toggle .theme-toggle__button {
+  background: #2a2a2a;
+  box-shadow:
+    0 6px 10px -2px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 2px -1px rgba(0, 0, 0, 0.4),
+    0 -4px 6px -1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 2px -1px rgba(255, 255, 255, 0.1),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15),
+    inset 0 8px 12px 0 rgba(255, 255, 255, 0.05);
+}
+
+.theme-toggle .theme-toggle__label {
+  transition: color 300ms ease-out;
+  line-height: 40px;
+  text-align: center;
+  position: absolute;
+  font-weight: 700;
+  font-size: 14px;
+  display: block;
+  opacity: 0.9;
+  height: 100%;
+  width: 100%;
+  color: rgba(0, 0, 0, 0.9);
+  user-select: none;
+}
+
+:root.dark .theme-toggle .theme-toggle__label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.theme-toggle input {
+  opacity: 0;
+  position: absolute;
+  cursor: pointer;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  margin: 0;
+}
+
+.theme-toggle input:active ~ .theme-toggle__button {
+  filter: blur(0.5px);
+  box-shadow:
+    0 5px 10px -2px rgba(0, 0, 0, 0.4),
+    inset 0 -3px 12px 1px rgba(255, 255, 255, 0.9),
+    0 -4px 6px -1px rgba(255, 255, 255, 0.6),
+    inset 0 3px 10px 0 rgba(0, 0, 0, 0.4),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.6);
+}
+
+.theme-toggle input:active ~ .theme-toggle__label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+:root.dark .theme-toggle input:active ~ .theme-toggle__label {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.theme-toggle input:checked ~ .theme-toggle__button {
+  filter: blur(0.5px);
+  box-shadow:
+    0 4px 10px -2px rgba(0, 0, 0, 0.4),
+    inset 0 -3px 10px -1px rgba(255, 255, 255, 0.9),
+    0 -4px 6px -1px rgba(255, 255, 255, 0.6),
+    inset 0 3px 8px 0 rgba(0, 0, 0, 0.2),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Dark-mode adjustments for form inputs, selects, textareas */
+:root.dark select.form-input,
+:root.dark input.form-input,
+:root.dark textarea.form-input {
+  background-color: var(--color-tertiary);
+  color: var(--color-text-main);
+  border-color: var(--color-border);
+}
+
+:root.dark select.form-input option {
+  background-color: var(--color-tertiary);
+  color: var(--color-text-main);
 }
 
 * {

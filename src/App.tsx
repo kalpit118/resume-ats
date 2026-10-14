@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Upload, FileText, ChevronRight, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
 function cleanLatex(s: string): string {
@@ -363,6 +364,7 @@ function App() {
             <button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }} aria-label="Settings">
               <Settings size={20} />
             </button>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
@@ -396,7 +398,7 @@ function App() {
                   borderRadius: 'var(--radius-base)', 
                   padding: 'var(--space-6)', 
                   textAlign: 'center',
-                  backgroundColor: resumeFile ? 'var(--color-tertiary)' : (resumeText ? '#f5f5f5' : 'var(--color-secondary)'),
+                  backgroundColor: resumeFile ? 'var(--color-tertiary)' : (resumeText ? 'var(--color-tertiary)' : 'var(--color-secondary)'),
                   cursor: resumeText ? 'not-allowed' : 'pointer',
                   opacity: resumeText ? 0.5 : 1,
                   pointerEvents: resumeText ? 'none' : 'auto',
@@ -438,7 +440,7 @@ function App() {
                     width: '100%', 
                     minHeight: '120px', 
                     resize: 'vertical',
-                    backgroundColor: resumeFile ? '#f5f5f5' : 'var(--color-secondary)',
+                    backgroundColor: resumeFile ? 'var(--color-tertiary)' : 'var(--color-secondary)',
                     cursor: resumeFile ? 'not-allowed' : 'text',
                     opacity: resumeFile ? 0.5 : 1
                   }}
