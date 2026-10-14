@@ -170,6 +170,13 @@
   color: var(--color-text-main);
 }
 
+/* ── View Transition (theme switch circle reveal) ───────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
