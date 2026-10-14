@@ -629,4 +629,178 @@ label:active .ios-checkbox .checkbox-wrapper {
   animation: ios-checkbox-bounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Custom Theme Dropdown Select ── */
+.custom-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-base);
+  text-align: left;
+  user-select: none;
+}
+
+:root.dark .custom-select-trigger {
+  background-color: var(--color-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-main);
+}
+
+.custom-select-trigger:hover:not(:disabled) {
+  border-color: var(--color-text-muted);
+}
+
+.custom-select-trigger:focus-visible,
+.custom-select-trigger.is-open {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-secondary), 0 0 0 4px var(--color-accent);
+}
+
+.custom-select-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.custom-select-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
+}
+
+.custom-select-chevron {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.custom-select-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  padding: 6px;
+  box-shadow:
+    0 12px 28px -4px rgba(0, 0, 0, 0.16),
+    0 4px 10px -2px rgba(0, 0, 0, 0.08);
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: customSelectFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root.dark .custom-select-dropdown {
+  background-color: #18181b;
+  border-color: #2e2e32;
+  box-shadow:
+    0 14px 36px -4px rgba(0, 0, 0, 0.75),
+    0 4px 12px -2px rgba(0, 0, 0, 0.45);
+}
+
+@keyframes customSelectFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.custom-select-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 999px;
+}
+
+/* ── Hovering shadows on options ── */
+.custom-select-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-main);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  background-color: transparent;
+}
+
+.custom-select-option:hover {
+  background-color: var(--color-tertiary);
+  color: var(--color-primary);
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 6px 14px -2px rgba(0, 0, 0, 0.12),
+    0 2px 6px -1px rgba(0, 0, 0, 0.06);
+  z-index: 2;
+}
+
+:root.dark .custom-select-option:hover {
+  background-color: #27272a;
+  color: #ffffff;
+  transform: translateY(-1.5px);
+  box-shadow:
+    0 6px 16px -2px rgba(0, 0, 0, 0.65),
+    0 2px 6px -1px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 2;
+}
+
+.custom-select-option.is-selected {
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+:root.dark .custom-select-option.is-selected {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.custom-select-option-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-select-empty {
+  padding: 12px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+
 

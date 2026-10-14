@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Upload, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import CustomSelect from './CustomSelect';
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
 function cleanLatex(s: string): string {
@@ -475,31 +476,43 @@ function App() {
               <div style={{ flex: 1 }}>
                 <div className="form-group">
                   <label className="form-label">Intensity</label>
-                  <select className="form-input" style={{ cursor: 'pointer' }} value={intensity} onChange={e => setIntensity(e.target.value)}>
-                    <option>Balanced (Recommended)</option>
-                    <option>Conservative</option>
-                    <option>Aggressive</option>
-                  </select>
+                  <CustomSelect
+                    value={intensity}
+                    onChange={setIntensity}
+                    options={[
+                      'Balanced (Recommended)',
+                      'Conservative',
+                      'Aggressive'
+                    ]}
+                  />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Writing Style</label>
-                  <select className="form-input" style={{ cursor: 'pointer' }} value={writingStyle} onChange={e => setWritingStyle(e.target.value)}>
-                    <option>Professional</option>
-                    <option>Concise</option>
-                    <option>Technical</option>
-                    <option>Achievement-focused</option>
-                    <option>ATS-focused</option>
-                  </select>
+                  <CustomSelect
+                    value={writingStyle}
+                    onChange={setWritingStyle}
+                    options={[
+                      'Professional',
+                      'Concise',
+                      'Technical',
+                      'Achievement-focused',
+                      'ATS-focused'
+                    ]}
+                  />
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Target Length</label>
-                  <select className="form-input" style={{ cursor: 'pointer' }} value={targetLength} onChange={e => setTargetLength(e.target.value)}>
-                    <option>One page</option>
-                    <option>Two pages</option>
-                    <option>Keep original length</option>
-                  </select>
+                  <CustomSelect
+                    value={targetLength}
+                    onChange={setTargetLength}
+                    options={[
+                      'One page',
+                      'Two pages',
+                      'Keep original length'
+                    ]}
+                  />
                 </div>
 
                 <div style={{ margin: 'var(--space-4) 0' }}>
@@ -943,10 +956,17 @@ function App() {
             
             <div style={{ marginBottom: 'var(--space-3)' }}>
               <label className="text-small" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Provider</label>
-              <select className="form-input" style={{ width: '100%' }} value={aiProvider} onChange={e => { setAiProvider(e.target.value); localStorage.setItem('aiProvider', e.target.value); }}>
-                <option value="groq">Groq</option>
-                <option value="nim">NVIDIA NIM</option>
-              </select>
+              <CustomSelect
+                value={aiProvider}
+                onChange={val => {
+                  setAiProvider(val);
+                  localStorage.setItem('aiProvider', val);
+                }}
+                options={[
+                  { value: 'groq', label: 'Groq' },
+                  { value: 'nim', label: 'NVIDIA NIM' }
+                ]}
+              />
             </div>
             
             <div style={{ marginBottom: 'var(--space-3)' }}>
@@ -983,37 +1003,37 @@ function App() {
             <div style={{ marginBottom: 'var(--space-4)' }}>
               <label className="text-small" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Model Name</label>
               {aiProvider === 'groq' ? (
-                <div style={{ position: 'relative' }}>
-                  <select 
-                    className="form-input" 
-                    style={{ width: '100%', appearance: 'none', paddingRight: '32px' }} 
-                    value={aiModel} 
-                    onChange={e => { setAiModel(e.target.value); localStorage.setItem('aiModel', e.target.value); }}
-                    disabled={isLoadingModels || groqModels.length === 0}
-                  >
-                    {groqModels.length === 0 && <option value={aiModel}>{aiModel} {groqApiKey ? '(Loading...)' : '(Enter valid API Key)'}</option>}
-                    {groqModels.map(model => (
-                      <option key={model} value={model}>{model}</option>
-                    ))}
-                  </select>
-                  {isLoadingModels && <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}><Loader2 size={16} className="animate-spin" color="var(--color-text-muted)" /></div>}
-                </div>
+                <CustomSelect
+                  value={aiModel}
+                  onChange={val => {
+                    setAiModel(val);
+                    localStorage.setItem('aiModel', val);
+                  }}
+                  disabled={isLoadingModels || groqModels.length === 0}
+                  isLoading={isLoadingModels}
+                  placeholder={groqApiKey ? 'Loading models...' : 'Enter valid API Key'}
+                  options={
+                    groqModels.length === 0
+                      ? [{ value: aiModel, label: `${aiModel} ${groqApiKey ? '(Loading...)' : '(Enter valid API Key)'}` }]
+                      : groqModels.map(m => ({ value: m, label: m }))
+                  }
+                />
               ) : aiProvider === 'nim' ? (
-                <div style={{ position: 'relative' }}>
-                  <select 
-                    className="form-input" 
-                    style={{ width: '100%', appearance: 'none', paddingRight: '32px' }} 
-                    value={aiModel} 
-                    onChange={e => { setAiModel(e.target.value); localStorage.setItem('aiModel', e.target.value); }}
-                    disabled={isLoadingModels || nimModels.length === 0}
-                  >
-                    {nimModels.length === 0 && <option value={aiModel}>{aiModel} {nimApiKey ? '(Loading...)' : '(Enter valid API Key)'}</option>}
-                    {nimModels.map(model => (
-                      <option key={model} value={model}>{model} (Free Endpoint)</option>
-                    ))}
-                  </select>
-                  {isLoadingModels && <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}><Loader2 size={16} className="animate-spin" color="var(--color-text-muted)" /></div>}
-                </div>
+                <CustomSelect
+                  value={aiModel}
+                  onChange={val => {
+                    setAiModel(val);
+                    localStorage.setItem('aiModel', val);
+                  }}
+                  disabled={isLoadingModels || nimModels.length === 0}
+                  isLoading={isLoadingModels}
+                  placeholder={nimApiKey ? 'Loading models...' : 'Enter valid API Key'}
+                  options={
+                    nimModels.length === 0
+                      ? [{ value: aiModel, label: `${aiModel} ${nimApiKey ? '(Loading...)' : '(Enter valid API Key)'}` }]
+                      : nimModels.map(m => ({ value: m, label: `${m} (Free Endpoint)` }))
+                  }
+                />
               ) : (
                 <input type="text" placeholder="e.g. meta/llama-3.1-8b-instruct" className="form-input" style={{ width: '100%' }} value={aiModel} onChange={e => { setAiModel(e.target.value); localStorage.setItem('aiModel', e.target.value); }} />
               )}
