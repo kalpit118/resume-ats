@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, FileText, ChevronRight, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
+import { Upload, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
@@ -23,7 +23,6 @@ function cleanLatex(s: string): string {
 }
 
 function App() {
-  const [step, setStep] = useState(1);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeText, setResumeText] = useState('');
   const [jdText, setJdText] = useState('');

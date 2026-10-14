@@ -1,20 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 
 /**
  * ThemeToggle — Uses the View Transition API to animate a circular
  * clip-path reveal from the button's position toward the bottom-left
  * corner of the viewport.
  *
- * How it works:
- *   1. `document.startViewTransition()` captures a rasterised snapshot
- *      of the old DOM state into `::view-transition-old(root)`.
- *   2. The callback flips the `dark` class → new DOM state becomes
- *      `::view-transition-new(root)`.
- *   3. We override the default crossfade with a clip-path circle
- *      animation on the NEW pseudo-element, expanding from the button
- *      center to a radius large enough to cover the entire viewport.
- *   4. Content is never hidden — the browser composites both snapshots
- *      with the circle reveal on top, running at compositor 60fps.
+ * Icons: High-quality SVG Lucide Sun and Moon with smooth spring rotation
+ * and scaling micro-interactions.
  */
 
 const DURATION_MS = 500;
@@ -76,15 +69,34 @@ export default function ThemeToggle() {
   }, [isDark]);
 
   return (
-    <div className="theme-toggle" onClick={handleToggle}>
+    <div
+      className="theme-toggle"
+      onClick={handleToggle}
+      role="button"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
       <input
         type="checkbox"
         checked={isDark}
         readOnly
         tabIndex={-1}
+        aria-hidden="true"
       />
       <span className="theme-toggle__button"></span>
-      <span className="theme-toggle__label">{isDark ? '☽' : '☼'}</span>
+      <span className="theme-toggle__icon-wrap">
+        <Sun
+          className={`theme-toggle__icon theme-toggle__icon--sun ${!isDark ? 'is-active' : ''}`}
+          size={18}
+          strokeWidth={2.2}
+        />
+        <Moon
+          className={`theme-toggle__icon theme-toggle__icon--moon ${isDark ? 'is-active' : ''}`}
+          size={16}
+          strokeWidth={2.2}
+        />
+      </span>
     </div>
   );
 }
+
