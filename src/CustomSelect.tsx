@@ -4,6 +4,7 @@ import { ChevronDown, Check, Loader2 } from 'lucide-react';
 export interface SelectOption {
   value: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 export interface CustomSelectProps {
@@ -28,14 +29,49 @@ export default function CustomSelect({
   className = ''
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [placement, setPlacement] = useState<'bottom' | 'top'>('bottom');
+  const [maxMenuHeight, setMaxMenuHeight] = useState<number>(260);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Normalize options to { value, label } format
+  // Normalize options to { value, label, icon } format
   const normalizedOptions: SelectOption[] = options.map(opt =>
     typeof opt === 'string' ? { value: opt, label: opt } : opt
   );
 
   const selectedOption = normalizedOptions.find(opt => opt.value === value);
+
+  // Dynamic viewport detection: flip upwards if opening downward would overflow viewport
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+
+    const calculatePlacement = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Desired dropdown height
+      const targetHeight = 240;
+
+      // If space below is less than targetHeight AND space above is larger, flip upwards!
+      if (spaceBelow < targetHeight && spaceAbove > spaceBelow) {
+        setPlacement('top');
+        setMaxMenuHeight(Math.max(140, Math.min(320, spaceAbove - 20)));
+      } else {
+        setPlacement('bottom');
+        setMaxMenuHeight(Math.max(140, Math.min(320, spaceBelow - 20)));
+      }
+    };
+
+    calculatePlacement();
+    window.addEventListener('resize', calculatePlacement);
+    window.addEventListener('scroll', calculatePlacement, true);
+    return () => {
+      window.removeEventListener('resize', calculatePlacement);
+      window.removeEventListener('scroll', calculatePlacement, true);
+    };
+  }, [isOpen]);
 
   // Click outside listener
   useEffect(() => {
@@ -105,10 +141,18 @@ export default function CustomSelect({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="custom-select-label">
-          {selectedOption ? selectedOption.label : placeholder}
+        <span
+          className="custom-select-label"
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}
+        >
+          {selectedOption?.icon && (
+            <span className="custom-select-icon-wrap">{selectedOption.icon}</span>
+          )}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
           {isLoading && (
             <Loader2
               size={16}
@@ -124,7 +168,11 @@ export default function CustomSelect({
       </button>
 
       {isOpen && (
-        <div className="custom-select-dropdown" role="listbox">
+        <div
+          className={`custom-select-dropdown custom-select-dropdown--${placement}`}
+          style={{ maxHeight: `${maxMenuHeight}px` }}
+          role="listbox"
+        >
           {normalizedOptions.length === 0 ? (
             <div className="custom-select-empty">No options available</div>
           ) : (
@@ -138,12 +186,20 @@ export default function CustomSelect({
                   role="option"
                   aria-selected={isSelected}
                 >
-                  <span className="custom-select-option-text">{opt.label}</span>
+                  <span
+                    className="custom-select-option-content"
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, overflow: 'hidden' }}
+                  >
+                    {opt.icon && (
+                      <span className="custom-select-icon-wrap">{opt.icon}</span>
+                    )}
+                    <span className="custom-select-option-text">{opt.label}</span>
+                  </span>
                   {isSelected && (
                     <Check
                       size={16}
                       className="custom-select-check"
-                      style={{ color: 'var(--color-accent)', flexShrink: 0 }}
+                      style={{ color: 'var(--color-accent)', flexShrink: 0, marginLeft: '8px' }}
                     />
                   )}
                 </div>

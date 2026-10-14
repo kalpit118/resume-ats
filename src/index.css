@@ -695,7 +695,6 @@ label:active .ios-checkbox .checkbox-wrapper {
 
 .custom-select-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
   left: 0;
   right: 0;
   z-index: 999;
@@ -706,12 +705,24 @@ label:active .ios-checkbox .checkbox-wrapper {
   box-shadow:
     0 12px 28px -4px rgba(0, 0, 0, 0.16),
     0 4px 10px -2px rgba(0, 0, 0, 0.08);
-  max-height: 250px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  animation: customSelectFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-select-dropdown--bottom {
+  top: calc(100% + 6px);
+  bottom: auto;
+  transform-origin: top center;
+  animation: customSelectFadeInDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-select-dropdown--top {
+  bottom: calc(100% + 6px);
+  top: auto;
+  transform-origin: bottom center;
+  animation: customSelectFadeInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root.dark .custom-select-dropdown {
@@ -722,7 +733,7 @@ label:active .ios-checkbox .checkbox-wrapper {
     0 4px 12px -2px rgba(0, 0, 0, 0.45);
 }
 
-@keyframes customSelectFadeIn {
+@keyframes customSelectFadeInDown {
   from {
     opacity: 0;
     transform: translateY(-6px) scale(0.98);
@@ -731,6 +742,24 @@ label:active .ios-checkbox .checkbox-wrapper {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+@keyframes customSelectFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.custom-select-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .custom-select-dropdown::-webkit-scrollbar {

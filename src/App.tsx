@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff } from 'lucide-react';
+import { Upload, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff, X, Check } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CustomSelect from './CustomSelect';
+import ModelLogo from './ModelLogo';
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
 function cleanLatex(s: string): string {
@@ -106,15 +107,62 @@ function App() {
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
 
+  // Modal Draft States (so opening Settings doesn't force saving or mutate until user clicks Save)
+  const [draftProvider, setDraftProvider] = useState(aiProvider);
+  const [draftGroqApiKey, setDraftGroqApiKey] = useState(groqApiKey);
+  const [draftNimApiKey, setDraftNimApiKey] = useState(nimApiKey);
+  const [draftAiModel, setDraftAiModel] = useState(aiModel);
+  const [savedFeedback, setSavedFeedback] = useState(false);
+
+  // Sync draft when modal opens
+  const handleOpenSettings = () => {
+    setDraftProvider(aiProvider);
+    setDraftGroqApiKey(groqApiKey);
+    setDraftNimApiKey(nimApiKey);
+    setDraftAiModel(aiModel);
+    setSavedFeedback(false);
+    setIsSettingsOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
+    setSavedFeedback(false);
+  };
+
+  const handleSaveSettings = () => {
+    setAiProvider(draftProvider);
+    localStorage.setItem('aiProvider', draftProvider);
+
+    setGroqApiKey(draftGroqApiKey);
+    localStorage.setItem('groqApiKey', draftGroqApiKey);
+
+    setNimApiKey(draftNimApiKey);
+    localStorage.setItem('nimApiKey', draftNimApiKey);
+
+    setAiModel(draftAiModel);
+    localStorage.setItem('aiModel', draftAiModel);
+
+    setSavedFeedback(true);
+    setTimeout(() => {
+      setIsSettingsOpen(false);
+      setSavedFeedback(false);
+    }, 400);
+  };
+
   // Determine active API key based on selected provider
   const currentApiKey = aiProvider === 'groq' ? groqApiKey : nimApiKey;
 
+  const activeKeyForFetch = isSettingsOpen
+    ? (draftProvider === 'groq' ? draftGroqApiKey : draftNimApiKey)
+    : (aiProvider === 'groq' ? groqApiKey : nimApiKey);
+  const activeProviderForFetch = isSettingsOpen ? draftProvider : aiProvider;
+
   useEffect(() => {
-    if (aiProvider === 'groq' && groqApiKey) {
+    if (activeProviderForFetch === 'groq' && activeKeyForFetch) {
       setIsLoadingModels(true);
       fetch('https://api.groq.com/openai/v1/models', {
         headers: {
-          'Authorization': `Bearer ${groqApiKey}`
+          'Authorization': `Bearer ${activeKeyForFetch}`
         }
       })
       .then(res => res.json())
@@ -122,20 +170,25 @@ function App() {
         if (data && data.data) {
           const models = data.data.map((m: any) => m.id).sort();
           setGroqModels(models);
-          // If current model is not in list, pick the first one
-          if (models.length > 0 && !models.includes(aiModel)) {
-             setAiModel(models[0]);
-             localStorage.setItem('aiModel', models[0]);
+          if (isSettingsOpen) {
+            if (models.length > 0 && !models.includes(draftAiModel)) {
+              setDraftAiModel(models[0]);
+            }
+          } else {
+            if (models.length > 0 && !models.includes(aiModel)) {
+              setAiModel(models[0]);
+              localStorage.setItem('aiModel', models[0]);
+            }
           }
         }
       })
       .catch(err => console.error("Failed to fetch groq models:", err))
       .finally(() => setIsLoadingModels(false));
-    } else if (aiProvider === 'nim' && nimApiKey) {
+    } else if (activeProviderForFetch === 'nim' && activeKeyForFetch) {
       setIsLoadingModels(true);
       fetch('/api/models?provider=nim', {
         headers: {
-          'Authorization': `Bearer ${nimApiKey}`
+          'Authorization': `Bearer ${activeKeyForFetch}`
         }
       })
       .then(res => res.json())
@@ -143,16 +196,22 @@ function App() {
         if (data && data.data) {
           const models = data.data.map((m: any) => m.id).sort();
           setNimModels(models);
-          if (models.length > 0 && !models.includes(aiModel)) {
-             setAiModel(models[0]);
-             localStorage.setItem('aiModel', models[0]);
+          if (isSettingsOpen) {
+            if (models.length > 0 && !models.includes(draftAiModel)) {
+              setDraftAiModel(models[0]);
+            }
+          } else {
+            if (models.length > 0 && !models.includes(aiModel)) {
+              setAiModel(models[0]);
+              localStorage.setItem('aiModel', models[0]);
+            }
           }
         }
       })
       .catch(err => console.error("Failed to fetch nim models:", err))
       .finally(() => setIsLoadingModels(false));
     }
-  }, [aiProvider, groqApiKey, nimApiKey]);
+  }, [activeProviderForFetch, activeKeyForFetch, isSettingsOpen]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -361,7 +420,7 @@ function App() {
           <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
             <a href="#" className="text-small" style={{ textDecoration: 'none', color: 'var(--color-text-muted)' }}>How it Works</a>
             <a href="#" className="text-small" style={{ textDecoration: 'none', color: 'var(--color-text-muted)' }}>Pricing</a>
-            <button onClick={() => setIsSettingsOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }} aria-label="Settings">
+            <button onClick={handleOpenSettings} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }} aria-label="Settings">
               <Settings size={20} />
             </button>
             <ThemeToggle />
@@ -943,28 +1002,54 @@ function App() {
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 'var(--space-3)'
         }}>
           <div style={{
             backgroundColor: 'var(--color-secondary)',
             padding: 'var(--space-6)',
             borderRadius: 'var(--radius-base)',
             width: '100%',
-            maxWidth: '500px'
+            maxWidth: '520px',
+            position: 'relative',
+            boxShadow: 'var(--shadow-lift)'
           }}>
-            <h2 className="text-h2" style={{ marginBottom: 'var(--space-4)' }}>AI Configuration</h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+              <h2 className="text-h2" style={{ margin: 0 }}>AI Configuration</h2>
+              <button 
+                type="button"
+                onClick={handleCloseSettings} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  color: 'var(--color-text-muted)',
+                  padding: '6px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all var(--transition-base)'
+                }}
+                onMouseOver={e => e.currentTarget.style.color = 'var(--color-primary)'}
+                onMouseOut={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                aria-label="Close settings"
+                title="Close without saving"
+              >
+                <X size={20} />
+              </button>
+            </div>
             
             <div style={{ marginBottom: 'var(--space-3)' }}>
               <label className="text-small" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Provider</label>
               <CustomSelect
-                value={aiProvider}
+                value={draftProvider}
                 onChange={val => {
-                  setAiProvider(val);
-                  localStorage.setItem('aiProvider', val);
+                  setDraftProvider(val);
                 }}
                 options={[
-                  { value: 'groq', label: 'Groq' },
-                  { value: 'nim', label: 'NVIDIA NIM' }
+                  { value: 'groq', label: 'Groq', icon: <ModelLogo modelId="groq" size={18} /> },
+                  { value: 'nim', label: 'NVIDIA NIM', icon: <ModelLogo modelId="nvidia" size={18} /> }
                 ]}
               />
             </div>
@@ -974,22 +1059,21 @@ function App() {
               <div style={{ position: 'relative' }}>
                 <input 
                   type={showApiKey ? "text" : "password"} 
-                  placeholder={`Enter ${aiProvider === 'groq' ? 'Groq' : 'NVIDIA'} API Key`} 
+                  placeholder={`Enter ${draftProvider === 'groq' ? 'Groq' : 'NVIDIA'} API Key`} 
                   className="form-input" 
                   style={{ width: '100%', paddingRight: '40px' }} 
-                  value={currentApiKey} 
+                  value={draftProvider === 'groq' ? draftGroqApiKey : draftNimApiKey} 
                   onChange={e => { 
                     const val = e.target.value;
-                    if (aiProvider === 'groq') {
-                      setGroqApiKey(val);
-                      localStorage.setItem('groqApiKey', val);
+                    if (draftProvider === 'groq') {
+                      setDraftGroqApiKey(val);
                     } else {
-                      setNimApiKey(val);
-                      localStorage.setItem('nimApiKey', val);
+                      setDraftNimApiKey(val);
                     }
                   }} 
                 />
                 <button 
+                  type="button"
                   style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)' }}
                   onClick={() => setShowApiKey(!showApiKey)}
                   title={showApiKey ? "Hide API Key" : "Show API Key"}
@@ -997,50 +1081,86 @@ function App() {
                   {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Keys are stored securely in your browser's local storage.</span>
+              <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Keys are stored securely in your browser's local storage upon saving.</span>
             </div>
 
             <div style={{ marginBottom: 'var(--space-4)' }}>
               <label className="text-small" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Model Name</label>
-              {aiProvider === 'groq' ? (
+              {draftProvider === 'groq' ? (
                 <CustomSelect
-                  value={aiModel}
+                  value={draftAiModel}
                   onChange={val => {
-                    setAiModel(val);
-                    localStorage.setItem('aiModel', val);
+                    setDraftAiModel(val);
                   }}
                   disabled={isLoadingModels || groqModels.length === 0}
                   isLoading={isLoadingModels}
-                  placeholder={groqApiKey ? 'Loading models...' : 'Enter valid API Key'}
+                  placeholder={draftGroqApiKey ? 'Loading models...' : 'Enter valid API Key'}
                   options={
                     groqModels.length === 0
-                      ? [{ value: aiModel, label: `${aiModel} ${groqApiKey ? '(Loading...)' : '(Enter valid API Key)'}` }]
-                      : groqModels.map(m => ({ value: m, label: m }))
+                      ? [{ value: draftAiModel, label: `${draftAiModel} ${draftGroqApiKey ? '(Loading...)' : '(Enter valid API Key)'}`, icon: <ModelLogo modelId={draftAiModel} size={18} /> }]
+                      : groqModels.map(m => ({ 
+                          value: m, 
+                          label: m,
+                          icon: <ModelLogo modelId={m} size={18} />
+                        }))
                   }
                 />
-              ) : aiProvider === 'nim' ? (
+              ) : draftProvider === 'nim' ? (
                 <CustomSelect
-                  value={aiModel}
+                  value={draftAiModel}
                   onChange={val => {
-                    setAiModel(val);
-                    localStorage.setItem('aiModel', val);
+                    setDraftAiModel(val);
                   }}
                   disabled={isLoadingModels || nimModels.length === 0}
                   isLoading={isLoadingModels}
-                  placeholder={nimApiKey ? 'Loading models...' : 'Enter valid API Key'}
+                  placeholder={draftNimApiKey ? 'Loading models...' : 'Enter valid API Key'}
                   options={
                     nimModels.length === 0
-                      ? [{ value: aiModel, label: `${aiModel} ${nimApiKey ? '(Loading...)' : '(Enter valid API Key)'}` }]
-                      : nimModels.map(m => ({ value: m, label: `${m} (Free Endpoint)` }))
+                      ? [{ value: draftAiModel, label: `${draftAiModel} ${draftNimApiKey ? '(Loading...)' : '(Enter valid API Key)'}`, icon: <ModelLogo modelId={draftAiModel} size={18} /> }]
+                      : nimModels.map(m => ({ 
+                          value: m, 
+                          label: `${m} (Free Endpoint)`,
+                          icon: <ModelLogo modelId={m} size={18} />
+                        }))
                   }
                 />
               ) : (
-                <input type="text" placeholder="e.g. meta/llama-3.1-8b-instruct" className="form-input" style={{ width: '100%' }} value={aiModel} onChange={e => { setAiModel(e.target.value); localStorage.setItem('aiModel', e.target.value); }} />
+                <input 
+                  type="text" 
+                  placeholder="e.g. meta/llama-3.1-8b-instruct" 
+                  className="form-input" 
+                  style={{ width: '100%' }} 
+                  value={draftAiModel} 
+                  onChange={e => { 
+                    setDraftAiModel(e.target.value); 
+                  }} 
+                />
               )}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-              <button className="btn btn-primary" onClick={() => setIsSettingsOpen(false)}>Save & Close</button>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={handleCloseSettings}
+                style={{ padding: '8px 18px' }}
+              >
+                Close
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={handleSaveSettings}
+                style={{ padding: '8px 20px', minWidth: '96px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                {savedFeedback ? (
+                  <>
+                    <Check size={16} /> Saved!
+                  </>
+                ) : (
+                  'Save'
+                )}
+              </button>
             </div>
           </div>
         </div>
