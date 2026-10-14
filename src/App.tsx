@@ -504,26 +504,53 @@ function App() {
 
                 <div style={{ margin: 'var(--space-4) 0' }}>
                   <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Content Preferences</label>
-                  {[
-                    { name: 'Optimize Summary', desc: 'Tailors your summary paragraph to highlight skills matching the job description.' },
-                    { name: 'Reorder Sections', desc: 'Moves sections with the highest keyword matches to the top of your resume.' },
-                    { name: 'Improve Bullet Points', desc: 'Rewrites bullets to include relevant keywords and action verbs naturally.' },
-                    { name: 'Condense Content', desc: 'Makes phrasing more concise to fit length constraints without losing impact.' }
-                  ].map(pref => (
-                    <label key={pref.name} className="custom-tooltip-container" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginBottom: 'var(--space-1)', cursor: 'pointer', width: 'fit-content' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={(contentPreferences as any)[pref.name]}
-                        onChange={(e) => setContentPreferences({...contentPreferences, [pref.name]: e.target.checked})}
-                        style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }} 
-                      />
-                      <span className="text-small">{pref.name}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
-                        <Info size={14} />
-                      </div>
-                      <div className="custom-tooltip-content">{pref.desc}</div>
-                    </label>
-                  ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { name: 'Optimize Summary', desc: 'Tailors your summary paragraph to highlight skills matching the job description.' },
+                      { name: 'Reorder Sections', desc: 'Moves sections with the highest keyword matches to the top of your resume.' },
+                      { name: 'Improve Bullet Points', desc: 'Rewrites bullets to include relevant keywords and action verbs naturally.' },
+                      { name: 'Condense Content', desc: 'Makes phrasing more concise to fit length constraints without losing impact.' }
+                    ].map(pref => (
+                      <label
+                        key={pref.name}
+                        className="custom-tooltip-container"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          cursor: 'pointer',
+                          width: 'fit-content',
+                          userSelect: 'none'
+                        }}
+                      >
+                        <span className="ios-checkbox red">
+                          <input 
+                            type="checkbox" 
+                            checked={(contentPreferences as any)[pref.name]}
+                            onChange={(e) => setContentPreferences({...contentPreferences, [pref.name]: e.target.checked})}
+                          />
+                          <span className="checkbox-wrapper">
+                            <span className="checkbox-bg"></span>
+                            <svg className="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                              <path
+                                className="check-path"
+                                d="M4 12L10 18L20 6"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              ></path>
+                            </svg>
+                          </span>
+                        </span>
+                        <span className="text-small">{pref.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
+                          <Info size={14} />
+                        </div>
+                        <div className="custom-tooltip-content">{pref.desc}</div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
 
