@@ -1,0 +1,102 @@
+% styling elements
+
+\newcommand{\labeltextstyle}[1]{
+    \textcolor{hltxt}{\RaggedRight\textbf{#1}}
+}
+
+\newcommand{\contentstyle}[1]{
+    #1
+}
+
+\newcommand{\bulletcontentstyle}[1]{
+    \ifthenelse{\equal{#1}{}}{}{
+        \readlist\mylist{#1}%
+        \bulletpadding
+        \begin{itemize} 
+            \foreachitem\z\in\mylist[]{
+                \item \z
+            }
+        \end{itemize}
+        \bulletpadding
+        %\vspace{\vspacebulletvalue}
+    }
+}
+
+% Declaration of options
+
+\DeclareOptionX<cvlabeledtext>{labeltext}{\def\labeltext{\labeltextstyle{#1}}}
+\DeclareOptionX<cvlabeledtext>{content}{\def\content{\contentstyle{#1}}}
+\ExecuteOptionsX<cvlabeledtext>{
+  labeltext=label,
+  content=content
+}
+
+\DeclareOptionX<cvlabeledbullets>{labeltext}{\def\labeltext{\labeltextstyle{#1}}}
+\DeclareOptionX<cvlabeledbullets>{bulletlistcontent}{\def\bulletlistcontent{\bulletcontentstyle{#1}}}
+\ExecuteOptionsX<cvlabeledbullets>{
+  labeltext=label,
+  bulletlistcontent={bullet item}
+}
+
+\DeclareOptionX<cvkeyrefs>{labeltext}{\def\labeltext{\labeltextstyle{#1}}}
+\DeclareOptionX<cvkeyrefs>{keyword}{\def\keyword{#1}}
+\ExecuteOptionsX<cvkeyrefs>{
+  labeltext=label,
+  keyword={}
+}
+
+% Definition of the command
+
+\newcommand*\CVLabeledTextField[1][]{%
+  \begingroup
+  \setkeys{cvlabeledtext}{#1}
+  \color{bodytxt}
+  \rightminipageonly{%
+  \begin{minipage}[t]{\descleftmargin\textwidth}%
+    \labeltext%
+  \end{minipage}%
+    \hfill%
+  \begin{minipage}[t]{\descrightmargin\textwidth}%
+    \content%
+  \end{minipage}%
+  }
+  \endgroup
+}
+
+\newcommand*\CVLabeledBulletListField[1][]{%
+  \begingroup
+  \setkeys{cvlabeledbullets}{#1}
+  \color{bodytxt}
+  \rightminipageonly{%
+  \begin{minipage}[t]{\descleftmargin\textwidth}%
+    \labeltext%
+  \end{minipage}%
+    \hfill%
+  \begin{minipage}[t]{\descrightmargin\textwidth}%
+    \bulletlistcontent%
+  \end{minipage}%
+  }
+  \endgroup
+}
+
+
+\newcommand*\CVKeywordReferences[1][]{%
+  \begingroup
+  \setkeys{cvkeyrefs}{#1}
+  \color{bodytxt}
+  \rightminipageonly{%
+  \begin{minipage}[t]{\descleftmargin\textwidth}%
+    \labeltext%
+  \end{minipage}%
+    \hfill%
+  \begin{minipage}[t]{\descrightmargin\textwidth}%
+    \nocite{*}%
+    \foreach \kw in \keyword {%
+    \begingroup\edef\x{\endgroup\noexpand
+        \vspace*{-0.7\baselineskip}
+        \printbibliography[heading=none, sorting=ynt, keyword=\keyword]
+    }\x 
+    }
+  \end{minipage}%
+  }
+}

@@ -53,13 +53,24 @@ export const processUpload = async (req: Request, res: Response) => {
           return res.status(400).json({ error: 'Unsupported file format: ' + mimetype });
         }
       } finally {
-        // Clean up uploaded file, EXCEPT for PDFs which we need for in-place export
+        /*
+        // ============================================================================
+        // [LEGACY FILE RETENTION] Formerly preserved PDFs on disk for edit_pdf.py
+        // ============================================================================
+        // if (mimetype !== 'application/pdf' && fs.existsSync(filePath)) {
+        //   fs.unlinkSync(filePath);
+        // }
+        // ============================================================================
+        */
+        // Clean up all temporary uploaded files immediately to prevent disk leaks.
+        // Since resume data is parsed in memory and exports compile LaTeX templates
+        // via Texapi, local PDF binaries no longer need to persist on disk.
         try {
-          if (mimetype !== 'application/pdf' && fs.existsSync(filePath)) {
+          if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
           }
         } catch (unlinkErr) {
-          console.error('Failed to clean up file:', unlinkErr);
+          console.error('Failed to clean up uploaded file:', unlinkErr);
         }
       }
     }
@@ -104,25 +115,45 @@ export const processUpload = async (req: Request, res: Response) => {
     // it from hallucinating structural tags (like egin{highlights}) into its text extraction.
     const cleanResumeText = rawLatex ? stripLatexFormatting(resumeText) : resumeText;
     
+    const matchedKeywords = matches.filter((m: any) => m.status === 'matched').map((m: any) => m.requirement);
+    const missingKeywords = matches.filter((m: any) => m.status === 'missing').map((m: any) => m.requirement);
+
     const optimizationResult = await generateOptimizationPlan(provider, {
       resumeText: cleanResumeText,
       jdText,
-      rules
+      rules,
+      matchedKeywords,
+      missingKeywords,
+      jobMatchScore: scoreBreakdown.score
     });
 
     // Run changes through Evidence Guard
-    // Sanitize the plan first: remove fabricated new sections and invalid entries
+    // Sanitize the plan first: remove fabricated new sections, invalid entries, and no-op changes
     const sanitizedPlan = (optimizationResult.optimizationPlan || []).filter((change: any) => {
       // Must have a string original that is not empty (no fabricated additions)
       if (typeof change.original !== 'string' || !change.original.trim()) return false;
       // Must have a string optimized
       if (typeof change.optimized !== 'string' || !change.optimized.trim()) return false;
+
+      // Omit changes where original and optimized are identical (no actual change made)
+      const cleanOrig = stripLatexFormatting(change.original).trim();
+      const cleanOpt = stripLatexFormatting(change.optimized).trim();
+      if (cleanOrig === cleanOpt) {
+        console.warn(`[Sanitize] Skipping unchanged entry: "${cleanOrig.substring(0, 60)}"`);
+        return false;
+      }
+
       // Reject if section is 'new_section' or contains a dot (sub-section fabrication like 'technologies.tools')
       const sec = (change.section || '').toLowerCase().trim();
       if (sec === 'new_section' || sec === '') return false;
       // Allow dot-notation only as display label, but skip changes that add new top-level sections
       // by checking if the original text actually appears in the resume
-      if (!resumeText.toLowerCase().includes(change.original.toLowerCase().substring(0, 20).trim())) {
+      const cleanSearch = stripLatexFormatting(change.original).toLowerCase().substring(0, 20).trim();
+      const rawSearch = change.original.toLowerCase().substring(0, 20).trim();
+      const inClean = cleanResumeText.toLowerCase().includes(cleanSearch) || cleanResumeText.toLowerCase().includes(rawSearch);
+      const inRaw = resumeText.toLowerCase().includes(cleanSearch) || resumeText.toLowerCase().includes(rawSearch);
+
+      if (!inClean && !inRaw) {
         console.warn(`[Sanitize] Skipping change — original not found in resume: "${change.original.substring(0, 60)}"`);
         return false;
       }
@@ -158,7 +189,7 @@ export const processUpload = async (req: Request, res: Response) => {
       original: stripLatexFormatting(change.original),
       optimized: stripLatexFormatting(change.optimized),
       validation: validations[index] || { isValid: false, reasoning: 'Validation failed or missing', requiresUserConfirmation: true }
-    }));
+    })).filter((item: any) => item.original.trim() !== item.optimized.trim());
 
     // Clean LaTeX commands from parsed profile so editor & manual fields are readable plain text
     const cleanProfile = (prof: any) => {
@@ -195,7 +226,14 @@ export const processUpload = async (req: Request, res: Response) => {
         // rawLatex is non-null only when a .tex file was uploaded — used for LaTeX-to-PDF export
         rawLatex: rawLatex ?? undefined,
         isLatexSource: rawLatex !== null,
-        originalPdfPath: req.file && req.file.mimetype === 'application/pdf' ? req.file.filename : undefined,
+        /*
+        // ============================================================================
+        // [ARCHIVED] originalPdfPath was previously used for legacy edit_pdf.py
+        // ============================================================================
+        // originalPdfPath: req.file && req.file.mimetype === 'application/pdf' ? req.file.filename : undefined,
+        // ============================================================================
+        */
+        originalPdfPath: undefined,
         message: 'Phase 4: AI Optimization & Evidence Guard executed',
       }
     });

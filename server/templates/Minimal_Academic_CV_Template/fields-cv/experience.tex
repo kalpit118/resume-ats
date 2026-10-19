@@ -1,0 +1,109 @@
+% styling elements
+% \vspace{\vspacetitlesvalue}
+\newcommand{\datesstyle}[1]{
+    \textbf{#1}
+}
+
+\newcommand{\titlestyle}[1]{
+    \textcolor{hltxt}{\textbf{#1}}
+}
+
+\newcommand{\subtitlestyle}[1]{
+    \ifthenelse{\equal{#1}{}}
+    {
+        \vspace{-\baselineskip}
+    }{\textcolor{subhltxt}{\textit{\textbf{#1}}}}
+}
+
+\newcommand{\locationstyle}[1]{
+    \ifthenelse{\equal{#1}{}}
+    {}{\textit{#1}}
+}
+
+\newcommand{\titlecommentstyle}[1]{
+    \ifthenelse{\equal{#1}{}}
+    {
+        \vspace{-\baselineskip}
+    }{(#1)}
+}
+
+\newcommand{\bulletliststyle}[1]{
+    \ifthenelse{\equal{#1}{}}{}{
+        \vspace{\vspacebulletvalue}
+        \readlist\mylist{#1}%
+        %\bulletpadding
+        \begin{itemize} 
+            \foreachitem\z\in\mylist[]{
+                \item \z
+            }
+        \end{itemize}
+        \bulletpadding
+        %\vspace{\vspacebulletvalue}
+    }
+}
+
+
+% Declaration of options
+
+\DeclareOptionX<cvexp>{dates}{\def\dates{#1}}
+\DeclareOptionX<cvexp>{title}{\def\title{#1}}
+\DeclareOptionX<cvexp>{uppercasetitle}{\def\uppercasetitle{#1}}
+\DeclareOptionX<cvexp>{subtitle}{\def\subtitle{#1}}
+\DeclareOptionX<cvexp>{location}{\def\location{#1}}
+\DeclareOptionX<cvexp>{titlecomment}{\def\titlecomment{#1}}
+\DeclareOptionX<cvexp>{bulletlist}{\def\bulletlist{#1}}
+\ExecuteOptionsX<cvexp>{
+    dates=2022,
+    title=My title,
+    uppercasetitle=no,
+    subtitle=,
+    location=,
+    titlecomment=,
+    bulletlist={},
+}
+
+% Definition of the command
+
+\newcommand*\CVExperienceField[1][]{%
+  \begingroup
+  \setkeys{cvexp}{#1}
+  \color{bodytxt}
+  \rightminipageonly{
+  \begin{minipage}[t]{\segmenttitlesareavalue\textwidth}
+    \ifthenelse{\equal{\uppercasetitle}{yes}}{\titlestyle{\MakeUppercase{\title}}}{\titlestyle{\title}}
+  \end{minipage}%
+    \hfill%
+  \begin{minipage}[t]{\datesareavalue\textwidth}
+    \RaggedLeft{\datesstyle{\dates}}
+  \end{minipage}%
+  \ifthenelse{
+    \equal{\subtitle}{} \AND \equal{\location}{}
+  }{}{
+    \vspace{\vspacetitlesvalue}
+    
+    \ifthenelse{
+        \equal{\subtitle}{} \OR \equal{\location}{}
+    }{
+        \ifthenelse{
+            \equal{\subtitle}{}
+        }{
+            \locationstyle{\location}
+        }{
+            \subtitlestyle{\subtitle}
+        }
+    }{
+        \subtitlestyle{\subtitle} | \locationstyle{\location}
+    }
+  }%
+  \ifthenelse{
+    \equal{\titlecomment}{}
+  }{}{
+        \vspace{\vspacetitlesvalue}
+
+        \titlecommentstyle{\titlecomment}
+  }%
+  \bulletliststyle{\bulletlist}
+  %\vspace{\baselineskip}
+  }
+  \endgroup
+}

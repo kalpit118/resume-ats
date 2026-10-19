@@ -1,6 +1,30 @@
 import { Exporter, ExportRequest } from './Exporter.js';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
 import { MarkdownExporter } from './MarkdownExporter.js';
+
+/*
+ * ============================================================================
+ * [ARCHIVED / DEPRECATED] Puppeteer HTML-to-PDF Exporter
+ * ============================================================================
+ * Historical Context:
+ *   Initially, this class converted markdown resume text into basic HTML and
+ *   spawned a headless Chromium browser instance via Puppeteer to print the
+ *   webpage into a PDF buffer.
+ *
+ * Why Deactivated:
+ *   - The project has migrated to LaTeX templates compiled directly to PDF
+ *     via the Texapi cloud service (https://texapi.ovh), producing superior
+ *     typography and ATS-compliant output.
+ *   - Puppeteer requires a 300MB+ Chromium binary download and multiple Linux
+ *     system libraries (libnss3, libatk, libgbm, etc.), which adds massive
+ *     overhead to Docker images and hosting platforms.
+ *
+ * How to Re-enable (if ever needed):
+ *   1. Uncomment `import puppeteer from 'puppeteer';` at the top of this file.
+ *   2. Uncomment the Puppeteer launch block inside `export()`.
+ *   3. Ensure `puppeteer` is listed in `package.json` dependencies.
+ * ============================================================================
+ */
 
 export class PDFExporter implements Exporter {
   async export(request: ExportRequest): Promise<Buffer> {
@@ -38,6 +62,10 @@ export class PDFExporter implements Exporter {
       </html>
     `;
 
+    /*
+    // ========================================================================
+    // [ARCHIVED PUPPETEER HEADLESS CHROME LAUNCH]
+    // ========================================================================
     const browser = await puppeteer.launch({ 
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -48,5 +76,11 @@ export class PDFExporter implements Exporter {
     await browser.close();
 
     return Buffer.from(pdfBuffer);
+    // ========================================================================
+    */
+
+    throw new Error(
+      'Puppeteer PDF export is archived. ResumeFit compiles PDFs exclusively via LaTeX templates and Texapi.'
+    );
   }
 }

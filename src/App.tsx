@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff, X, Check } from 'lucide-react';
+import { Settings, CheckCircle2, Zap, Loader2, Info, Eye, EyeOff, X, Check, Pencil, AlertCircle, FileUp } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CustomSelect from './CustomSelect';
 import ModelLogo from './ModelLogo';
+import UploadDropzone from './UploadDropzone';
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
 function cleanLatex(s: string): string {
@@ -95,6 +96,52 @@ function App() {
     setCustomOptimized(prev => { const n = { ...prev }; delete n[idx]; return n; });
     setEditingIdx(null);
   };
+
+  // LaTeX Resume Template Picker State
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('modern');
+  const [customLatexContent, setCustomLatexContent] = useState<string | null>(null);
+  const [customLatexFileName, setCustomLatexFileName] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [availableTemplates, setAvailableTemplates] = useState<any[]>([
+    {
+      id: 'classic',
+      name: 'Classic Professional',
+      description: 'Traditional serif layout — ideal for finance, law, and consulting.',
+      previewUrl: '/templates/classic.svg',
+    },
+    {
+      id: 'modern',
+      name: 'Modern Minimal',
+      description: 'Clean navy-accent design — great for tech and product roles.',
+      previewUrl: '/templates/modern.svg',
+    },
+    {
+      id: 'minimal',
+      name: 'ATS Minimal',
+      description: 'Plain formatting optimized for Applicant Tracking Systems.',
+      previewUrl: '/templates/minimal.svg',
+    },
+    {
+      id: 'academic',
+      name: 'Academic / CV',
+      description: 'Research-oriented CV with green accent — for academia and R&D.',
+      previewUrl: '/templates/academic.svg',
+    },
+  ]);
+  const customTexInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/export/templates')
+      .then(res => res.json())
+      .then(data => {
+        if (data?.templates && Array.isArray(data.templates) && data.templates.length > 0) {
+          setAvailableTemplates(data.templates);
+        }
+      })
+      .catch(() => {});
+  }, [isTemplatePickerOpen]);
 
   // Phase 7: AI Provider Settings
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -213,13 +260,6 @@ function App() {
     }
   }, [activeProviderForFetch, activeKeyForFetch, isSettingsOpen]);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setResumeFile(e.target.files[0]);
-    }
-  };
 
   const runOptimization = async () => {
     if (!resumeFile && !resumeText.trim()) {
@@ -254,12 +294,31 @@ function App() {
         body: formData,
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status} ${response.statusText}. Please ensure the backend server is running on port 3001.`);
+        }
+        throw jsonErr;
+      }
+
       if (response.ok) {
+        // Defensive filter: Ensure no-op proposals (where original and optimized are identical) are excluded
+        if (data.data?.validatedPlan) {
+          data.data.validatedPlan = data.data.validatedPlan.filter((plan: any) => {
+            const orig = cleanLatex(plan.original || '').trim();
+            const opt = cleanLatex(plan.optimized || '').trim();
+            return orig !== opt;
+          });
+        }
         setAnalysisResult(data);
         // Default: accept all changes
         const allIndices = new Set<number>((data.data.validatedPlan || []).map((_: any, i: number) => i));
         setAcceptedChanges(allIndices);
+        setCustomOptimized({});
+        setEditingIdx(null);
         // Initialize editor state with the original parsed profile.
         // AI changes are applied dynamically during export or display.
         const profile = data.data.profile;
@@ -292,11 +351,11 @@ function App() {
           document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else {
-        alert("Error: " + data.error);
+        alert("Error: " + (data?.error || response.statusText || "Request failed"));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to connect to server.");
+      alert(err.message || "Failed to connect to server.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -359,36 +418,77 @@ function App() {
 
 
   const handleExport = async (format: string) => {
+    const isLatexSource = analysisResult?.data?.isLatexSource === true;
+    const rawLatex = analysisResult?.data?.rawLatex as string | undefined;
+
+    // When exporting to PDF and input was not a .tex file, open the LaTeX Template Picker popup
+    if (format === 'PDF' && (!isLatexSource || !rawLatex)) {
+      setExportError(null);
+      setIsTemplatePickerOpen(true);
+      return;
+    }
+
+    // Direct export for TXT or native LaTeX uploads
+    await executeExport(format);
+  };
+
+  const executeExport = async (format: string, templateIdOverride?: string, customLatexOverride?: string) => {
     try {
-      // Use server-provided flags — the server is the authority on whether
-      // a .tex file was uploaded (isLatexSource) and preserves the raw source (rawLatex).
-      // This prevents PDF uploads from ever accidentally triggering LaTeX export.
+      if (format === 'PDF') {
+        setIsExportingPdf(true);
+        setExportError(null);
+      }
+
       const isLatexSource = analysisResult?.data?.isLatexSource === true;
       const rawLatex = analysisResult?.data?.rawLatex as string | undefined;
 
-      // Build the changes array — server will apply these to the LaTeX source smartly
+      // Build the changes array — server will apply these to the template source smartly
       const changes = (analysisResult?.data?.validatedPlan || []).map((plan: any, idx: number) => ({
         original: plan.original,
         optimized: customOptimized[idx] ?? plan.optimized,  // prefer user's manual edit
         accepted: acceptedChanges.has(idx)
       }));
 
-      console.log(`[Export] isLatexSource: ${isLatexSource} | rawLatex present: ${!!rawLatex} | accepted: ${acceptedChanges.size}/${changes.length} | custom edits: ${Object.keys(customOptimized).length}`);
+      const activeTemplateId = templateIdOverride || selectedTemplateId;
+      const activeCustomLatex = customLatexOverride !== undefined ? customLatexOverride : customLatexContent;
+
+      const bodyPayload: any = {
+        format,
+        resumeContent: getFinalResumeContent(),
+        rawLatex: (format === 'PDF' && isLatexSource && rawLatex) ? rawLatex : undefined,
+        changes: changes,
+        template: 'SwissModernism',
+        aiProvider,
+        apiKey: currentApiKey,
+        aiModel
+      };
+
+      if (format === 'PDF' && (!isLatexSource || !rawLatex)) {
+        if (activeCustomLatex) {
+          bodyPayload.customLatex = activeCustomLatex;
+        } else {
+          bodyPayload.templateId = activeTemplateId;
+        }
+      }
+
+      console.log(`[Export] isLatexSource: ${isLatexSource} | rawLatex: ${!!rawLatex} | templateId: ${bodyPayload.templateId} | customLatex: ${!!bodyPayload.customLatex}`);
 
       const response = await fetch('/api/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          format,
-          resumeContent: getFinalResumeContent(),
-          rawLatex: (format === 'PDF' && isLatexSource && rawLatex) ? rawLatex : undefined,
-          originalPdfPath: analysisResult?.data?.originalPdfPath,
-          changes: changes,
-          template: 'SwissModernism'
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
-      if (!response.ok) throw new Error('Export failed');
+      if (!response.ok) {
+        let errorMsg = 'Export failed';
+        try {
+          const errData = await response.json();
+          errorMsg = errData.details || errData.error || errorMsg;
+        } catch {
+          errorMsg = await response.text();
+        }
+        throw new Error(errorMsg);
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -399,10 +499,37 @@ function App() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to export document.');
+
+      // Successfully exported PDF -> close template picker
+      if (format === 'PDF') {
+        setIsTemplatePickerOpen(false);
+      }
+    } catch (err: any) {
+      console.error('[Export Error]', err);
+      const msg = err.message || 'Failed to export document.';
+      if (format === 'PDF' && isTemplatePickerOpen) {
+        setExportError(msg);
+      } else {
+        alert(msg);
+      }
+    } finally {
+      setIsExportingPdf(false);
     }
+  };
+
+  const handleCustomTexUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        setCustomLatexContent(text);
+        setCustomLatexFileName(file.name);
+        setSelectedTemplateId('custom');
+      }
+    };
+    reader.readAsText(file);
   };
 
 
@@ -446,48 +573,15 @@ function App() {
           {/* Left Column: Inputs (8 cols) */}
           <div style={{ gridColumn: 'span 8' }}>
             <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
-                <h2 className="text-h2">1. Your Resume</h2>
-                <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>PDF, DOCX, TXT, LaTeX</span>
-              </div>
+              <h2 className="text-h2" style={{ marginBottom: 'var(--space-3)' }}>1. Your Resume</h2>
               
-              <div 
-                style={{ 
-                  border: '1px dashed var(--color-border)', 
-                  borderRadius: 'var(--radius-base)', 
-                  padding: 'var(--space-6)', 
-                  textAlign: 'center',
-                  backgroundColor: resumeFile ? 'var(--color-tertiary)' : (resumeText ? 'var(--color-tertiary)' : 'var(--color-secondary)'),
-                  cursor: resumeText ? 'not-allowed' : 'pointer',
-                  opacity: resumeText ? 0.5 : 1,
-                  pointerEvents: resumeText ? 'none' : 'auto',
-                  transition: 'var(--transition-base)'
-                }}
-                onClick={() => fileInputRef.current?.click()}
-                onMouseOver={(e) => !resumeText && (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                onMouseOut={(e) => e.currentTarget.style.borderColor = 'var(--color-border)'}
-              >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  style={{ display: 'none' }} 
-                  accept=".pdf,.docx,.txt,.tex" 
-                  onChange={handleFileChange} 
-                />
-                <Upload size={32} style={{ margin: '0 auto var(--space-2)', color: 'var(--color-text-muted)' }} />
-                <p className="text-small" style={{ marginBottom: 'var(--space-2)' }}>
-                  {resumeFile ? `Selected: ${resumeFile.name}` : "Drag and drop your resume here, or click to browse"}
-                </p>
-                {!resumeFile && (
-                  <button 
-                    className="btn btn-secondary" 
-                    style={{ margin: '0 auto', display: 'block' }} 
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  >
-                    Browse Files
-                  </button>
-                )}
-              </div>
+              <UploadDropzone
+                file={resumeFile}
+                onFileSelect={(file) => setResumeFile(file)}
+                onClear={() => setResumeFile(null)}
+                disabled={!!resumeText.trim()}
+                accept=".pdf,.docx,.txt,.tex"
+              />
 
               <div style={{ marginTop: 'var(--space-3)' }}>
                 <p className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)', textAlign: 'center' }}>Or paste text directly</p>
@@ -653,7 +747,7 @@ function App() {
         {analysisResult && analysisResult.data && (
           <div className="card animate-fade-up" style={{ marginTop: 'var(--space-6)' }} id="results">
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-              <CheckCircle2 color="green" size={28} />
+              <CheckCircle2 size={28} style={{ color: 'var(--guard-passed-color)' }} />
               <h2 className="text-h1">Analysis Complete</h2>
             </div>
             
@@ -677,7 +771,7 @@ function App() {
                     <ul style={{ listStyle: 'none', padding: 0 }}>
                       {analysisResult.data.matches.filter((m: any) => m.status === 'matched').map((m: any, i: number) => (
                         <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <CheckCircle2 size={16} color="green" /> 
+                          <CheckCircle2 size={16} style={{ color: 'var(--guard-passed-color)' }} /> 
                           <span>{m.requirement}</span>
                           <span className="text-small" style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>({m.type})</span>
                         </li>
@@ -715,141 +809,243 @@ function App() {
                 <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Powered by: <strong>{analysisResult.data.providerUsed}</strong></span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                {analysisResult.data.validatedPlan && analysisResult.data.validatedPlan.map((plan: any, idx: number) => {
-                  const isAccepted = acceptedChanges.has(idx);
-                  const hasCustomEdit = customOptimized[idx] !== undefined;
-                  const displayOptimized = customOptimized[idx] ?? plan.optimized;
-                  const isEditingThis = editingIdx === idx;
-                  return (
-                  <div key={idx} style={{ 
-                    border: `2px solid ${isAccepted ? '#16a34a' : '#dc2626'}`, 
-                    borderRadius: 'var(--radius-base)',
-                    padding: 'var(--space-3)',
-                    backgroundColor: isAccepted ? '#f0fdf4' : '#fff5f5',
-                    transition: 'all 0.2s ease'
-                  }}>
-                    {/* Header row */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
-                      <span className="text-small" style={{ fontWeight: 600 }}>Section: {
-                        // Strip dot-notation (e.g. "technologies.tools" → "technologies › tools")
-                        // and capitalize each segment for clean display
-                        (plan.section || '').split('.').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ')
-                      }</span>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {plan.validation?.isValid ? (
-                          <span className="text-small" style={{ color: 'green', display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <CheckCircle2 size={14} /> Evidence Guard Passed
-                          </span>
-                        ) : (
-                          <span className="text-small" style={{ color: 'var(--color-error)' }}>
-                            Requires Confirmation
-                          </span>
-                        )}
-                        <span className="text-small" style={{ 
-                          fontWeight: 700, 
-                          color: isAccepted ? '#16a34a' : '#dc2626',
-                          padding: '2px 8px',
-                          borderRadius: '999px',
-                          backgroundColor: isAccepted ? '#dcfce7' : '#fee2e2',
-                          fontSize: '0.75rem'
-                        }}>
-                          {isAccepted ? '✓ Accepted' : '✕ Rejected'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Content columns */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                      {/* Original */}
-                      <div style={{ backgroundColor: 'var(--color-tertiary)', padding: 'var(--space-2)', borderRadius: '4px' }}>
-                        <div className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>Original</div>
-                        <div className="text-body" style={{ fontSize: '0.9rem', opacity: isAccepted ? 0.6 : 1 }}>{cleanLatex(plan.original)}</div>
-                      </div>
+              {(!analysisResult.data.validatedPlan || analysisResult.data.validatedPlan.length === 0) ? (
+                (() => {
+                  const matchScore = analysisResult.data.scoreBreakdown?.score ?? 0;
+                  const missingMatches = (analysisResult.data.matches || []).filter((m: any) => m.status === 'missing');
+                  const isQualificationGap = matchScore < 70 || missingMatches.length > 2;
 
-                      {/* Optimized — with pencil icon */}
-                      <div style={{ backgroundColor: isAccepted ? '#dcfce7' : '#fef2f2', padding: 'var(--space-2)', borderRadius: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>Optimized</span>
-                            {hasCustomEdit && (
-                              <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#2563eb', background: '#dbeafe', padding: '1px 6px', borderRadius: '999px' }}>Edited</span>
-                            )}
-                          </div>
-                          {!isEditingThis && (
-                            <button
-                              title="Edit optimized text"
-                              onClick={() => startEditing(idx, displayOptimized)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', color: '#6b7280', fontSize: '0.9rem', lineHeight: 1 }}
-                              onMouseOver={e => (e.currentTarget.style.backgroundColor = '#e5e7eb')}
-                              onMouseOut={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                            >✏️</button>
-                          )}
+                  if (isQualificationGap) {
+                    return (
+                      <div className="card" style={{ padding: 'var(--space-4)', backgroundColor: 'var(--color-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-base)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--guard-warning-color)', marginBottom: '10px', fontWeight: 600, fontSize: '1.05rem' }}>
+                          <AlertCircle size={22} />
+                          <span>No Automated Rewrites Proposed (Evidence Guard Protected)</span>
                         </div>
+                        <p className="text-body" style={{ margin: '0 0 var(--space-3) 0', color: 'var(--color-text-muted)', fontSize: '0.92rem', lineHeight: 1.6 }}>
+                          Your current match score is <strong>{matchScore}/100</strong> with <strong>{missingMatches.length} missing qualifications</strong> from the job description.
+                          To maintain strict resume integrity and prevent candidate misrepresentation, the <strong>AI Evidence Guard</strong> will not fabricate unverified skills (such as {missingMatches.slice(0, 4).map((m: any) => m.requirement).join(', ')}) that are absent from your source resume.
+                        </p>
 
-                        {isEditingThis ? (
-                          <div>
-                            <textarea
-                              value={editingText}
-                              onChange={e => setEditingText(e.target.value)}
-                              autoFocus
-                              style={{ 
-                                width: '100%', minHeight: '90px', fontSize: '0.85rem', 
-                                padding: '6px', borderRadius: '4px', border: '1px solid #93c5fd',
-                                resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5,
-                                outline: '2px solid #3b82f6', outlineOffset: '1px'
-                              }}
-                            />
-                            <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                              <button
-                                className="btn btn-primary"
-                                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
-                                onClick={() => saveEdit(idx)}
-                              >✓ Save</button>
-                              <button
-                                className="btn btn-secondary"
-                                style={{ padding: '4px 10px', fontSize: '0.8rem' }}
-                                onClick={cancelEdit}
-                              >✕ Cancel</button>
-                              {hasCustomEdit && (
-                                <button
-                                  className="btn btn-secondary"
-                                  style={{ padding: '4px 10px', fontSize: '0.8rem', color: '#6b7280' }}
-                                  onClick={() => resetEdit(idx)}
-                                >↺ Reset to AI</button>
-                              )}
+                        {missingMatches.length > 0 && (
+                          <div style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-secondary)', borderRadius: 'var(--radius-base)', border: '1px solid var(--color-border)' }}>
+                            <div className="text-small" style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-main)' }}>
+                              Missing Job Requirements Requiring Candidate Input:
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {missingMatches.map((m: any, idx: number) => (
+                                <span 
+                                  key={idx} 
+                                  className="text-small"
+                                  style={{ 
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px', 
+                                    borderRadius: '4px', 
+                                    backgroundColor: 'var(--color-tertiary)', 
+                                    border: '1px solid var(--color-border)',
+                                    color: 'var(--color-text-muted)'
+                                  }}
+                                >
+                                  <span style={{ color: 'var(--color-error)', fontSize: '0.8rem' }}>✕</span>
+                                  {m.requirement}
+                                </span>
+                              ))}
                             </div>
                           </div>
-                        ) : (
-                          <div className="text-body" style={{ fontSize: '0.9rem', opacity: isAccepted ? 1 : 0.5, whiteSpace: 'pre-wrap' }}>
-                            {cleanLatex(displayOptimized)}
-                          </div>
                         )}
+
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', borderTop: '1px dashed var(--color-border)', paddingTop: 'var(--space-3)' }}>
+                          <span className="text-small" style={{ color: 'var(--color-text-muted)' }}>
+                            💡 <strong>Next Step:</strong> If you have experience with any of these skills, add them manually to your resume.
+                          </span>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{ padding: '6px 14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            onClick={() => {
+                              setEditableResume(getFinalResumeContent());
+                              setIsEditorOpen(true);
+                            }}
+                          >
+                            <Pencil size={13} /> Edit Resume Manually
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="card" style={{ padding: 'var(--space-4)', textAlign: 'center', backgroundColor: 'var(--color-tertiary)', border: '1px solid var(--color-border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--guard-passed-color)', marginBottom: '8px', fontWeight: 600 }}>
+                        <CheckCircle2 size={20} />
+                        <span>Strong Match — No Content Changes Required</span>
+                      </div>
+                      <p className="text-body" style={{ margin: '0 auto', color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>
+                        Your resume already closely aligns with this job description ({matchScore}/100). All core qualifications and required keywords are well-represented.
+                      </p>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                  {(() => {
+                    const matchScore = analysisResult.data.scoreBreakdown?.score ?? 0;
+                    const missingMatches = (analysisResult.data.matches || []).filter((m: any) => m.status === 'missing');
+                    const isQualificationGap = matchScore < 70 || missingMatches.length > 2;
+                    if (!isQualificationGap) return null;
+                    return (
+                      <div style={{
+                        padding: 'var(--space-2) var(--space-3)',
+                        borderRadius: 'var(--radius-base)',
+                        backgroundColor: 'var(--color-tertiary)',
+                        border: '1px solid var(--color-border)',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        fontSize: '0.88rem',
+                        color: 'var(--color-text-muted)',
+                        lineHeight: 1.5
+                      }}>
+                        <Info size={16} style={{ color: 'var(--guard-warning-color)', flexShrink: 0, marginTop: '2px' }} />
+                        <div>
+                          <span style={{ color: 'var(--color-text-main)', fontWeight: 600 }}>Evidence Guard Notice: </span>
+                          The AI optimized your existing experience below. However, <strong>{missingMatches.length} required skills</strong> (such as {missingMatches.slice(0, 4).map((m: any) => m.requirement).join(', ')}) were not found in your resume and cannot be fabricated. If you possess these skills, please add them via <strong>Edit Manually</strong>.
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {analysisResult.data.validatedPlan.map((plan: any, idx: number) => {
+                    const isAccepted = acceptedChanges.has(idx);
+                    const hasCustomEdit = customOptimized[idx] !== undefined;
+                    const displayOptimized = customOptimized[idx] ?? plan.optimized;
+                    const isEditingThis = editingIdx === idx;
+                    return (
+                    <div 
+                      key={idx} 
+                      className={`plan-item-card ${isAccepted ? 'is-accepted' : 'is-rejected'}`}
+                    >
+                      {/* Header row */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                        <span className="text-small" style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>
+                          Section: {
+                            (plan.section || '').split('.').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ')
+                          }
+                        </span>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          {plan.validation?.isValid ? (
+                            <span className="text-small" style={{ color: 'var(--guard-passed-color)', display: 'flex', gap: '4px', alignItems: 'center', fontWeight: 500 }}>
+                              <CheckCircle2 size={14} /> Evidence Guard Passed
+                            </span>
+                          ) : (
+                            <span className="text-small" style={{ color: 'var(--color-error)', display: 'flex', gap: '4px', alignItems: 'center', fontWeight: 500 }}>
+                              <AlertCircle size={14} /> Requires Confirmation
+                            </span>
+                          )}
+                          <span className={`plan-status-badge ${isAccepted ? 'is-accepted' : 'is-rejected'}`}>
+                            {isAccepted ? <Check size={12} strokeWidth={2.5} /> : <X size={12} strokeWidth={2.5} />}
+                            {isAccepted ? 'Accepted' : 'Rejected'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Content columns */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+                        {/* Original */}
+                        <div className="plan-box-original">
+                          <div className="text-small" style={{ color: 'var(--color-text-muted)', marginBottom: '4px', fontWeight: 500 }}>Original</div>
+                          <div className="plan-box-text" style={{ opacity: isAccepted ? 0.65 : 1 }}>
+                            {cleanLatex(plan.original)}
+                          </div>
+                        </div>
+
+                        {/* Optimized — with pencil icon */}
+                        <div className={`plan-box-optimized ${isAccepted ? 'is-accepted' : 'is-rejected'}`}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span className="text-small" style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>Optimized</span>
+                              {hasCustomEdit && (
+                                <span className="plan-edited-badge">Edited</span>
+                              )}
+                            </div>
+                            {!isEditingThis && (
+                              <button
+                                title="Edit optimized text"
+                                onClick={() => startEditing(idx, displayOptimized)}
+                                className="plan-edit-btn"
+                              >
+                                <Pencil size={13} />
+                              </button>
+                            )}
+                          </div>
+
+                          {isEditingThis ? (
+                            <div>
+                              <textarea
+                                value={editingText}
+                                onChange={e => setEditingText(e.target.value)}
+                                autoFocus
+                                className="plan-edit-textarea"
+                              />
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                <button
+                                  className="btn btn-primary"
+                                  style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                                  onClick={() => saveEdit(idx)}
+                                >
+                                  <Check size={13} strokeWidth={2.5} /> Save
+                                </button>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                                  onClick={cancelEdit}
+                                >
+                                  <X size={13} strokeWidth={2.5} /> Cancel
+                                </button>
+                                {hasCustomEdit && (
+                                  <button
+                                    className="btn btn-secondary"
+                                    style={{ padding: '4px 10px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}
+                                    onClick={() => resetEdit(idx)}
+                                  >
+                                    ↺ Reset to AI
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="plan-box-text" style={{ opacity: isAccepted ? 1 : 0.55 }}>
+                              {cleanLatex(displayOptimized)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Reasoning */}
+                      <div className="text-small" style={{ color: 'var(--color-text-muted)', borderTop: '1px dashed var(--color-border)', paddingTop: 'var(--space-2)', lineHeight: 1.5 }}>
+                        <strong style={{ color: 'var(--color-text-main)' }}>AI Reasoning:</strong> {plan.reasoning} <br/>
+                        <strong style={{ color: 'var(--color-text-main)' }}>Guard Reasoning:</strong> {plan.validation?.reasoning}
+                      </div>
+
+                      {/* Accept / Reject buttons */}
+                      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                        <button 
+                          className={`plan-btn-action plan-btn-accept ${isAccepted ? 'is-active' : ''}`}
+                          onClick={() => toggleChange(idx, true)}
+                        >
+                          <Check size={14} strokeWidth={2.5} /> Accept
+                        </button>
+                        <button 
+                          className={`plan-btn-action plan-btn-reject ${!isAccepted ? 'is-active' : ''}`}
+                          onClick={() => toggleChange(idx, false)}
+                        >
+                          <X size={14} strokeWidth={2.5} /> Reject
+                        </button>
                       </div>
                     </div>
-                    
-                    {/* Reasoning */}
-                    <div className="text-small" style={{ color: 'var(--color-text-muted)', borderTop: '1px dashed var(--color-border)', paddingTop: 'var(--space-2)' }}>
-                      <strong>AI Reasoning:</strong> {plan.reasoning} <br/>
-                      <strong>Guard Reasoning:</strong> {plan.validation?.reasoning}
-                    </div>
-
-                    {/* Accept / Reject buttons */}
-                    <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                      <button 
-                        className="btn btn-primary"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem', opacity: isAccepted ? 1 : 0.45 }}
-                        onClick={() => toggleChange(idx, true)}
-                      >✓ Accept</button>
-                      <button 
-                        className="btn btn-secondary"
-                        style={{ padding: '6px 16px', fontSize: '0.85rem', opacity: !isAccepted ? 1 : 0.45, color: !isAccepted ? '#dc2626' : undefined, borderColor: !isAccepted ? '#dc2626' : undefined }}
-                        onClick={() => toggleChange(idx, false)}
-                      >✕ Reject</button>
-                    </div>
-                  </div>
-                );})}
-              </div>
+                  );})}
+                </div>
+              )}
             </div>
 
             <div style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-3)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
@@ -1161,6 +1357,172 @@ function App() {
                   'Save'
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LaTeX Resume Template Picker Modal */}
+      {isTemplatePickerOpen && (
+        <div 
+          className="tpl-overlay" 
+          onClick={(e) => { 
+            if (e.target === e.currentTarget && !isExportingPdf) setIsTemplatePickerOpen(false); 
+          }}
+        >
+          <div className="tpl-modal" role="dialog" aria-modal="true">
+            {/* Header */}
+            <div className="tpl-modal__header">
+              <div>
+                <h2 className="tpl-modal__title">Choose a LaTeX Resume Template</h2>
+                <p className="tpl-modal__subtitle">
+                  Select a professional design below, or upload your own .tex file. Our AI will automatically place your optimized content into the template.
+                </p>
+              </div>
+              <button
+                onClick={() => !isExportingPdf && setIsTemplatePickerOpen(false)}
+                disabled={isExportingPdf}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  cursor: isExportingPdf ? 'not-allowed' : 'pointer', 
+                  color: 'var(--color-text-muted)', 
+                  display: 'flex', 
+                  alignItems: 'center' 
+                }}
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="tpl-modal__body">
+              {/* Custom .tex upload option */}
+              <div
+                className={`tpl-upload-zone ${selectedTemplateId === 'custom' ? 'is-selected' : ''}`}
+                onClick={() => customTexInputRef.current?.click()}
+              >
+                <input
+                  type="file"
+                  ref={customTexInputRef}
+                  accept=".tex"
+                  style={{ display: 'none' }}
+                  onChange={handleCustomTexUpload}
+                />
+                <div className="tpl-upload-zone__icon">
+                  <FileUp size={22} />
+                </div>
+                <div className="tpl-upload-zone__text">
+                  <div className="tpl-upload-zone__label">
+                    {customLatexFileName ? `Uploaded: ${customLatexFileName}` : 'Upload your own LaTeX template (.tex)'}
+                  </div>
+                  <div className="tpl-upload-zone__hint">
+                    {customLatexFileName
+                      ? 'Click to change file · AI will inject your resume content into this template'
+                      : 'Have a favorite LaTeX template? Upload it and AI will populate it with your resume content'}
+                  </div>
+                </div>
+                {customLatexFileName && (
+                  <span className="tpl-upload-zone__filename" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Check size={14} /> Selected
+                  </span>
+                )}
+              </div>
+
+              <div style={{ margin: 'var(--space-2) 0 var(--space-2) 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="text-small" style={{ fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.72rem' }}>
+                  Or select a built-in template
+                </span>
+                <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+              </div>
+
+              {/* Template Grid */}
+              <div className="tpl-grid">
+                {availableTemplates.map((t) => {
+                  const isSelected = selectedTemplateId === t.id && !customLatexContent;
+                  return (
+                    <div
+                      key={t.id}
+                      className={`tpl-card ${isSelected ? 'is-selected' : ''}`}
+                      onClick={() => {
+                        setSelectedTemplateId(t.id);
+                        setCustomLatexContent(null);
+                        setCustomLatexFileName(null);
+                      }}
+                    >
+                      <div className="tpl-card__preview">
+                        <img 
+                          src={t.previewUrl} 
+                          alt={t.name} 
+                          loading="lazy" 
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = '/templates/default-preview.svg';
+                          }}
+                        />
+                      </div>
+                      <div className="tpl-card__name">{t.name}</div>
+                      <div className="tpl-card__desc">{t.description}</div>
+                      {isSelected && (
+                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--plan-accepted-text)', fontSize: '0.72rem', fontWeight: 600 }}>
+                          <Check size={12} strokeWidth={3} /> Selected
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Compilation Spinner */}
+              {isExportingPdf && (
+                <div className="tpl-compiling">
+                  <Loader2 size={28} className="animate-spin" />
+                  <div style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>
+                    Arranging content in LaTeX & compiling PDF...
+                  </div>
+                  <div style={{ fontSize: '0.78rem' }}>
+                    AI is formatting sections and generating the PDF via Texapi cloud compiler.
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {exportError && (
+                <div className="tpl-error-msg">
+                  <strong>Export failed:</strong> {exportError}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="tpl-modal__footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsTemplatePickerOpen(false)}
+                disabled={isExportingPdf}
+                style={{ padding: '8px 16px' }}
+              >
+                Cancel
+              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => executeExport('PDF')}
+                  disabled={isExportingPdf || (!selectedTemplateId && !customLatexContent)}
+                  style={{ padding: '8px 22px', display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', justifyContent: 'center' }}
+                >
+                  {isExportingPdf ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Compiling...
+                    </>
+                  ) : (
+                    'Generate & Export PDF'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

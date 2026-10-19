@@ -1,0 +1,23 @@
+\newcommand{\leftminipage}[1]{%
+    \begin{minipage}[c]{\leftcolumwidth\textwidth}%
+        #1%
+    \end{minipage}%
+    \hfill%
+}
+
+\newcommand{\rightminipage}[1]{%
+    \begin{minipage}[c]{\rightcolumwidth\textwidth}%
+        #1%
+    \end{minipage}%
+}
+
+\newcommand{\rightminipageonly}[1]{%
+    \setlength\topsep{0pt}%
+    \begin{flushright}%
+    \begin{minipage}[t]{\rightcolumwidth\textwidth}%
+    \vspace{0.35\baselineskip}
+    
+        #1%
+    \end{minipage}%
+    \end{flushright}%
+}

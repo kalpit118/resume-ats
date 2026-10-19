@@ -1,0 +1,66 @@
+% Template: Academic / Research CV
+% ResumeFit Built-in Template
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage[T1]{fontenc}
+
+\definecolor{darkgreen}{RGB}{0,80,50}
+
+\titleformat{\section}{\color{darkgreen}\bfseries\large}{}{0em}{}[\color{darkgreen}\titlerule]
+\titlespacing{\section}{0pt}{8pt}{4pt}
+
+\setlist[itemize]{topsep=2pt,itemsep=1pt,parsep=0pt}
+\hypersetup{colorlinks=true,linkcolor=darkgreen,urlcolor=darkgreen}
+\pagestyle{empty}
+
+\begin{document}
+
+%% SLOT: HEADER
+{\centering
+  {\Large\bfseries Dr. Morgan Lee}\\[4pt]
+  {\small morgan.lee@university.edu $\cdot$ (555) 345-6789 $\cdot$ Boston, MA $\cdot$ \href{https://scholar.google.com/}{Google Scholar}}
+  \par
+}
+\vspace{6pt}
+
+%% SLOT: SUMMARY
+\section{Research Interests}
+Machine learning, natural language processing, large language models, human-computer interaction, and applied AI ethics. Committed to bridging academic research and real-world applications.
+
+%% SLOT: EXPERIENCE
+\section{Academic \& Professional Experience}
+
+\textbf{Postdoctoral Researcher} \hfill 2022 -- Present\\
+\textit{MIT Computer Science \& AI Lab (CSAIL), Cambridge, MA}
+\begin{itemize}
+  \item Developing novel transformer-based architectures for low-resource NLP tasks
+  \item Collaborating with industry partners on responsible AI deployment frameworks
+\end{itemize}
+
+\textbf{Graduate Research Assistant} \hfill 2018 -- 2022\\
+\textit{Stanford University, Palo Alto, CA}
+\begin{itemize}
+  \item Conducted NIH-funded research on biomedical NLP, published 8 peer-reviewed papers
+  \item Taught CS229 (Machine Learning) as Teaching Assistant for 3 semesters
+\end{itemize}
+
+%% SLOT: EDUCATION
+\section{Education}
+
+\textbf{Ph.D. Computer Science} \hfill 2022\\
+Stanford University -- Advisor: Prof. A. Expert
+
+\textbf{B.S. Computer Science \& Mathematics} \hfill 2018\\
+MIT, Cambridge, MA -- GPA: 4.0/4.0
+
+%% SLOT: SKILLS
+\section{Technical Skills}
+\textbf{Languages:} Python, R, MATLAB, Julia, C++\\
+\textbf{ML/AI:} PyTorch, TensorFlow, HuggingFace, scikit-learn, JAX\\
+\textbf{Research Tools:} LaTeX, Jupyter, Git, Slurm, AWS HPC
+
+\end{document}

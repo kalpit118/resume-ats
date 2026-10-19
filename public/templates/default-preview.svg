@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="280" viewBox="0 0 200 280">
+  <rect width="200" height="280" fill="#ffffff" stroke="#e0e0e0" stroke-width="1" rx="4"/>
+  <!-- Header placeholder -->
+  <rect x="20" y="24" width="160" height="18" rx="3" fill="#2d3748"/>
+  <rect x="40" y="48" width="120" height="6" rx="2" fill="#cbd5e0"/>
+  <!-- Divider -->
+  <line x1="20" y1="62" x2="180" y2="62" stroke="#e2e8f0" stroke-width="1.5"/>
+  <!-- Section 1 -->
+  <rect x="20" y="74" width="60" height="8" rx="2" fill="#4a5568"/>
+  <rect x="20" y="88" width="160" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="96" width="145" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="104" width="130" height="4" rx="1.5" fill="#e2e8f0"/>
+  <!-- Section 2 -->
+  <rect x="20" y="122" width="75" height="8" rx="2" fill="#4a5568"/>
+  <rect x="20" y="136" width="160" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="144" width="150" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="152" width="120" height="4" rx="1.5" fill="#e2e8f0"/>
+  <!-- Section 3 -->
+  <rect x="20" y="170" width="70" height="8" rx="2" fill="#4a5568"/>
+  <rect x="20" y="184" width="160" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="192" width="140" height="4" rx="1.5" fill="#e2e8f0"/>
+  <!-- Section 4 -->
+  <rect x="20" y="210" width="50" height="8" rx="2" fill="#4a5568"/>
+  <rect x="20" y="224" width="150" height="4" rx="1.5" fill="#e2e8f0"/>
+  <rect x="20" y="232" width="130" height="4" rx="1.5" fill="#e2e8f0"/>
+  <!-- Badge -->
+  <rect x="120" y="254" width="65" height="16" rx="3" fill="#4a5568"/>
+  <text x="152" y="265" font-family="sans-serif" font-size="7" font-weight="bold" text-anchor="middle" fill="#ffffff">LaTeX</text>
+</svg>

@@ -1,0 +1,15 @@
+\newlength{\midl}
+\setlength{\midl}{\dimexpr(\textwidth - \leftcolumwidth\textwidth - \rightcolumwidth\textwidth)\relax}
+
+\newcommand{\cvsection}[2]{
+    \setlength\topsep{0pt}%
+    \begin{minipage}[c]{\leftcolumwidth\textwidth}%
+        \section{\MakeUppercase{#1}}%
+    \end{minipage}%
+    \hspace{\midl}%
+    \vspace{-\sectitlefontsize pt}
+    \textcolor{secline}{\noindent\rule[0em]{\rightcolumwidth\textwidth}{\sectionlinethickness}}%
+    \vspace{-\baselineskip}%
+    \intersectionsep%
+    \input{EDITABLE-sections/#2.tex}%
+}

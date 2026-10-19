@@ -1,0 +1,50 @@
+%----------------------- COLORS
+
+\hypersetup{
+    colorlinks = true,
+    linkcolor=linkurlcolor,
+    urlcolor=linkurlcolor
+}
+
+\AddToShipoutPictureBG{%
+\begin{tikzpicture}[remember picture,overlay]
+    \fill[color=bgcolor]  (current page.south west) -- (current page.north west) -- (current page.north east) -- (current page.south east);
+\end{tikzpicture}
+}
+
+%----------------------- FONTS
+
+\setmainfont{AvenirNextCyr}[
+    Path=fonts/avenir/,
+    Extension = .ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Demi,
+    ItalicFont=*-Italic,
+    BoldItalicFont=*-DemiItalic
+]
+
+\urlstyle{same}
+
+\newfontfamily{\fontone}{Canela}[
+    Path=fonts/canela/,
+    Extension = .ttf,
+    UprightFont=*-Regular,
+    BoldFont=*-Bold,
+    ItalicFont=*-RegularItalic,
+    BoldItalicFont=*-BoldItalic
+]
+
+\newfontfamily{\fonttwo}{OptimaLTPro}[
+    Path=fonts/optima/,
+    Extension = .ttf,
+    UprightFont=*-Roman,
+    BoldFont=*-Bold,
+    ItalicFont=*-Italic,
+    BoldItalicFont=*-BoldItalic
+]
+
+
+% BULLETS
+
+\newcommand{\bulletpadding}{\vspace{-\baselineskip}}
+

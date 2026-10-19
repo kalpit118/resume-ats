@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
+  color-scheme: light;
+
   /* Colors — Light (default) */
   --color-primary: #000000;
   --color-secondary: #ffffff;
@@ -11,6 +13,41 @@
   --color-text-muted: #555555;
   --color-border: #e0e0e0;
   --color-error: #d93025;
+
+  /* Scrollbars */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.22);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.38);
+
+  /* AI Optimization Plan & Evidence Guard */
+  --plan-accepted-bg: #f0fdf4;
+  --plan-accepted-border: #86efac;
+  --plan-accepted-highlight: #dcfce7;
+  --plan-accepted-text: #15803d;
+  --plan-accepted-badge-bg: #dcfce7;
+  --plan-accepted-badge-text: #16a34a;
+
+  --plan-rejected-bg: #fef2f2;
+  --plan-rejected-border: #fca5a5;
+  --plan-rejected-highlight: #fee2e2;
+  --plan-rejected-text: #b91c1c;
+  --plan-rejected-badge-bg: #fee2e2;
+  --plan-rejected-badge-text: #dc2626;
+
+  --guard-passed-color: #16a34a;
+  --guard-warning-color: #d97706;
+
+  /* Template Picker Modal */
+  --tpl-bg: #ffffff;
+  --tpl-card-bg: #f8f8f8;
+  --tpl-card-border: #e0e0e0;
+  --tpl-card-selected-border: #000000;
+  --tpl-card-selected-shadow: 0 0 0 2px #000000;
+  --tpl-card-hover-bg: #f0f0f0;
+  --tpl-overlay: rgba(0, 0, 0, 0.55);
+  --tpl-upload-bg: #f5f5f5;
+  --tpl-upload-border: #cccccc;
+  --tpl-upload-hover-bg: #ebebeb;
 
   /* Typography */
   --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -40,6 +77,8 @@
 
 /* ── Dark Theme ─────────────────────────────────────────────────────── */
 :root.dark {
+  color-scheme: dark;
+
   --color-primary: #ffffff;
   --color-secondary: #121212;
   --color-tertiary: #1e1e1e;
@@ -49,6 +88,41 @@
   --color-text-muted: #9e9e9e;
   --color-border: #2e2e2e;
   --color-error: #f28b82;
+
+  /* Scrollbars */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.22);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.38);
+
+  /* AI Optimization Plan & Evidence Guard */
+  --plan-accepted-bg: rgba(34, 197, 94, 0.08);
+  --plan-accepted-border: rgba(74, 222, 128, 0.35);
+  --plan-accepted-highlight: rgba(34, 197, 94, 0.14);
+  --plan-accepted-text: #4ade80;
+  --plan-accepted-badge-bg: rgba(34, 197, 94, 0.2);
+  --plan-accepted-badge-text: #4ade80;
+
+  --plan-rejected-bg: rgba(239, 68, 68, 0.08);
+  --plan-rejected-border: rgba(248, 113, 113, 0.35);
+  --plan-rejected-highlight: rgba(239, 68, 68, 0.14);
+  --plan-rejected-text: #f87171;
+  --plan-rejected-badge-bg: rgba(239, 68, 68, 0.2);
+  --plan-rejected-badge-text: #f87171;
+
+  --guard-passed-color: #4ade80;
+  --guard-warning-color: #fbbf24;
+
+  /* Template Picker Modal */
+  --tpl-bg: #1e1e1e;
+  --tpl-card-bg: #2a2a2a;
+  --tpl-card-border: #3a3a3a;
+  --tpl-card-selected-border: #ffffff;
+  --tpl-card-selected-shadow: 0 0 0 2px #ffffff;
+  --tpl-card-hover-bg: #333333;
+  --tpl-overlay: rgba(0, 0, 0, 0.7);
+  --tpl-upload-bg: #2a2a2a;
+  --tpl-upload-border: #444444;
+  --tpl-upload-hover-bg: #363636;
 
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
   --shadow-lift: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -201,6 +275,54 @@
   padding: 0;
 }
 
+/* ── Unified Modern Scrollbars (Cross-browser, Theme-adaptive) ──────── */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-button,
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-corner,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html {
+  background-color: var(--color-secondary);
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-secondary);
@@ -343,6 +465,8 @@ body {
 }
 
 .form-input {
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
   padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-base);
@@ -766,9 +890,17 @@ label:active .ios-checkbox .checkbox-wrapper {
   width: 6px;
 }
 
+.custom-select-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .custom-select-dropdown::-webkit-scrollbar-thumb {
-  background-color: var(--color-border);
+  background-color: var(--scrollbar-thumb);
   border-radius: 999px;
+}
+
+.custom-select-dropdown::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 /* ── Hovering shadows on options ── */
@@ -831,5 +963,763 @@ label:active .ios-checkbox .checkbox-wrapper {
   text-align: center;
 }
 
+/* ── AI Optimization Plan & Evidence Guard Component Styles ─────────── */
+.plan-item-card {
+  border-radius: var(--radius-base);
+  padding: var(--space-3);
+  transition: all var(--transition-base);
+  border: 1.5px solid var(--color-border);
+  background-color: var(--color-secondary);
+}
+
+.plan-item-card.is-accepted {
+  border-color: var(--plan-accepted-border);
+  background-color: var(--plan-accepted-bg);
+}
+
+.plan-item-card.is-rejected {
+  border-color: var(--plan-rejected-border);
+  background-color: var(--plan-rejected-bg);
+}
+
+.plan-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-base);
+}
+
+.plan-status-badge.is-accepted {
+  color: var(--plan-accepted-badge-text);
+  background-color: var(--plan-accepted-badge-bg);
+  border: 1px solid var(--plan-accepted-border);
+}
+
+.plan-status-badge.is-rejected {
+  color: var(--plan-rejected-badge-text);
+  background-color: var(--plan-rejected-badge-bg);
+  border: 1px solid var(--plan-rejected-border);
+}
+
+.plan-box-original {
+  background-color: var(--color-tertiary);
+  border: 1px solid var(--color-border);
+  padding: var(--space-2);
+  border-radius: 6px;
+  transition: all var(--transition-base);
+}
+
+:root.dark .plan-box-original {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.plan-box-optimized {
+  border-radius: 6px;
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.plan-box-optimized.is-accepted {
+  background-color: var(--plan-accepted-highlight);
+  border-color: var(--plan-accepted-border);
+}
+
+.plan-box-optimized.is-rejected {
+  background-color: var(--plan-rejected-highlight);
+  border-color: var(--plan-rejected-border);
+}
+
+.plan-box-text {
+  color: var(--color-text-main);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.plan-edit-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+
+.plan-edit-btn:hover {
+  background-color: var(--color-tertiary);
+  color: var(--color-text-main);
+  border-color: var(--color-border);
+}
+
+.plan-edited-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background-color: #dbeafe;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 78, 216, 0.2);
+}
+
+:root.dark .plan-edited-badge {
+  color: #93c5fa;
+  background-color: rgba(59, 130, 246, 0.25);
+  border-color: rgba(147, 197, 253, 0.3);
+}
+
+.plan-edit-textarea {
+  width: 100%;
+  min-height: 90px;
+  font-size: 0.85rem;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-secondary);
+  color: var(--color-text-main);
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.plan-edit-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-secondary), 0 0 0 4px var(--color-accent);
+}
+
+.plan-btn-action {
+  padding: 6px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-base);
+  font-family: var(--font-sans);
+}
+
+.plan-btn-accept {
+  background-color: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.plan-btn-accept:hover {
+  border-color: var(--plan-accepted-text);
+  color: var(--plan-accepted-text);
+  background-color: var(--plan-accepted-bg);
+}
+
+.plan-btn-accept.is-active {
+  background-color: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+
+:root.dark .plan-btn-accept.is-active {
+  background-color: #22c55e;
+  border-color: #22c55e;
+  color: #052e16;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+.plan-btn-reject {
+  background-color: transparent;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.plan-btn-reject:hover {
+  border-color: var(--plan-rejected-text);
+  color: var(--plan-rejected-text);
+  background-color: var(--plan-rejected-bg);
+}
+
+.plan-btn-reject.is-active {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+:root.dark .plan-btn-reject.is-active {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* ── Template Picker Modal ───────────────────────────────────────────────── */
+
+.tpl-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--tpl-overlay);
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 150ms ease-out;
+}
+
+.tpl-modal {
+  background: var(--tpl-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lift);
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tpl-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.tpl-modal__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.tpl-modal__subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.tpl-modal__body {
+  padding: var(--space-3) var(--space-4);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tpl-modal__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+/* Template grid */
+.tpl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+/* Individual template card */
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 12px;
+  background: var(--tpl-card-bg);
+  border: 2px solid var(--tpl-card-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: center;
+  user-select: none;
+}
+
+.tpl-card:hover {
+  background: var(--tpl-card-hover-bg);
+  border-color: var(--color-text-muted);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.tpl-card.is-selected {
+  border-color: var(--tpl-card-selected-border);
+  box-shadow: var(--tpl-card-selected-shadow);
+  background: var(--tpl-card-hover-bg);
+}
+
+.tpl-card__preview {
+  width: 120px;
+  height: 168px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.tpl-card__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tpl-card__name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  line-height: 1.2;
+}
+
+.tpl-card__desc {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+/* Upload custom template row */
+.tpl-upload-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 12px 16px;
+  background: var(--tpl-upload-bg);
+  border: 1.5px dashed var(--tpl-upload-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-bottom: var(--space-2);
+}
+
+.tpl-upload-zone:hover {
+  background: var(--tpl-upload-hover-bg);
+  border-color: var(--color-text-muted);
+}
+
+.tpl-upload-zone.is-selected {
+  border-color: var(--tpl-card-selected-border);
+  border-style: solid;
+  box-shadow: var(--tpl-card-selected-shadow);
+}
+
+.tpl-upload-zone__icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.tpl-upload-zone__text {
+  flex: 1;
+}
+
+.tpl-upload-zone__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.tpl-upload-zone__hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.tpl-upload-zone__filename {
+  font-size: 0.72rem;
+  color: var(--plan-accepted-text);
+  font-weight: 500;
+}
+
+/* Compiling spinner state */
+.tpl-compiling {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.tpl-error-msg {
+  background: var(--plan-rejected-bg);
+  border: 1px solid var(--plan-rejected-border);
+  color: var(--plan-rejected-text);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  margin-top: var(--space-2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ══ Upload dropzone ═════════════════════════════════════ */
+.upl {
+  /* Bencho design tokens mapped locally to ResumeFit's design system */
+  --card: var(--color-secondary);
+  --fill-slab: var(--color-tertiary);
+  --fill-on: var(--color-text-main);
+  --font-ui: var(--font-sans);
+  --ink: var(--color-text-main);
+  --ok: var(--guard-passed-color, #16a34a);
+  --pane-edge: var(--color-border);
+  --signal: #3b82f6;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-ui);
+  color: var(--fill-on, var(--ink));
+  user-select: none;
+  -webkit-user-select: none;}
+
+.upl *,
+.upl *::before,
+.upl *::after {
+  box-sizing: border-box;}
+
+/* a slot of fixed size, so the box can close in round an upload
+   without moving anything below it */
+.upl-zone-wrap {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 176px;}
+
+.upl-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  /* 176, up from 128: the drop target is the block, and a short
+     one read as a banner rather than a place to put something */
+  height: 176px;
+  padding: 0 16px;
+  overflow: hidden;
+  border-radius: var(--upl-r, var(--radius-base, 8px));
+  background: var(--fill-slab, var(--card));
+  border: 1px dashed var(--pane-edge);
+  /* a file over it and it grows, with a bounce; an upload and it
+     closes in round it */
+  transition:
+    scale 420ms cubic-bezier(0.24, 1.34, 0.38, 1),
+    width 420ms cubic-bezier(0.24, 1.34, 0.38, 1),
+    height 420ms cubic-bezier(0.24, 1.34, 0.38, 1),
+    background-color 220ms ease,
+    border-color 220ms ease;}
+
+.upl-zone[data-over] {
+  scale: 1.02;
+  border-color: var(--color-primary);}
+
+.upl-zone[data-busy] {
+  border-style: solid;}
+
+/* the gulp: in a little as the file goes down, out past its size,
+   and settle */
+.upl-zone[data-gulp] { animation: upl-gulp 460ms cubic-bezier(0.3, 1.2, 0.4, 1); }
+
+.upl-zone[data-gulp] .upl-icon { animation: upl-open 460ms cubic-bezier(0.3, 1.4, 0.4, 1); }
+
+[data-stroke="on"] .upl-zone { box-shadow: 0 0 0 1px var(--pane-edge); }
+
+.upl-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  /* a light grey tile, no edge — the fill's own ink walked most
+     of the way to its slab, so it is a pale grey on the light fill
+     and a lifted grey on the dark one */
+  background: color-mix(in srgb, var(--fill-on, #17181a) 6%, var(--fill-slab, #ffffff));
+  color: color-mix(in srgb, var(--fill-on, #17181a) 72%, var(--fill-slab, #ffffff));
+  transition: translate 420ms cubic-bezier(0.24, 1.34, 0.38, 1), background-color 220ms ease, color 220ms ease;}
+
+/* over the box the tile only lifts, and its arrow goes to full
+   ink — no colour of its own */
+.upl-zone[data-over] .upl-icon {
+  translate: 0 -4px;
+  color: var(--fill-on, var(--ink));}
+
+.upl-say {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  text-align: center;
+  letter-spacing: 0em;}
+
+.upl-say b { font-weight: 500; }
+
+.upl-say span {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--fill-on, #17181a) 52%, var(--fill-slab, #ffffff));
+  letter-spacing: 0em;}
+
+.upl-zone[data-refuse] .upl-say b { color: #e5484d; }
+
+/* the file, arrived in the box */
+.upl-now {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  flex: none;
+  animation: upl-land 420ms var(--upl-spring) both;}
+
+.upl-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 150px;}
+
+.upl-name {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  letter-spacing: 0em;}
+
+.upl-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 14px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--fill-on, #17181a) 52%, var(--fill-slab, #ffffff));
+  letter-spacing: 0em;}
+
+.upl-track {
+  position: relative;
+  height: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--fill-on, #17181a) 6%, var(--fill-slab, #ffffff));}
+
+.upl-bar {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--signal, #2231dd);
+  transform-origin: left center;}
+
+.upl-roll { display: inline-flex; line-height: 1em; height: 1em; overflow: hidden; }
+
+.upl-roll-col { display: inline-block; height: 1em; overflow: hidden; }
+
+.upl-roll-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 220ms cubic-bezier(0.24, 1.34, 0.38, 1);}
+
+.upl-roll-strip > span { height: 1em; }
+
+.upl-zone[data-clickable] {
+  cursor: pointer;
+}
+
+.upl[data-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.upl-browse-btn {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-base, 8px);
+  background: color-mix(in srgb, var(--fill-on, #17181a) 8%, var(--fill-slab, #ffffff));
+  color: var(--fill-on, var(--ink));
+  border: 1px solid var(--pane-edge, var(--color-border));
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.upl-browse-btn:hover {
+  background: color-mix(in srgb, var(--fill-on, #17181a) 16%, var(--fill-slab, #ffffff));
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.upl-browse-btn:active {
+  transform: translateY(1px);
+}
+
+.upl-end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 22px;
+  height: 22px;}
+
+.upl-tick {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ok, #15803d);
+  color: #fff;
+  animation: upl-pop 380ms cubic-bezier(0.3, 1.6, 0.4, 1) both;}
+
+.upl-clear-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--fill-on, #17181a) 12%, var(--fill-slab, #ffffff));
+  color: var(--fill-on, var(--ink));
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.upl-clear-btn:hover {
+  background: #e5484d;
+  color: #ffffff;
+  transform: scale(1.12);
+}
+
+.upl-clear-btn:active {
+  transform: scale(0.95);
+}
+
+/* the tray: three files lying under the box */
+.upl-tray {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;}
+
+.upl-slot {
+  position: relative;
+  width: 76px;
+  height: 75px;}
+
+.upl-file {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  /* home is a spring; the Bounce knob sets its overshoot */
+  transition: transform 420ms var(--upl-spring), opacity 220ms ease;}
+
+.upl-file[data-held] {
+  z-index: 5;
+  cursor: grabbing;
+  transition: none;}
+
+.upl-file[data-gone] { opacity: 0; pointer-events: none; transition: none; }
+
+.upl-file:not([data-gone]) { animation: upl-back 360ms var(--upl-spring) both; }
+
+.upl-file:focus-visible .upl-page { outline: 2px solid var(--signal, #2231dd); outline-offset: 3px; border-radius: 6px; }
+
+.upl-page { overflow: visible; }
+
+.upl-page-line {
+  stroke: color-mix(in srgb, var(--fill-on, #17181a) 32%, var(--fill-slab, #ffffff));
+  stroke-width: 1.5;
+  /* outline only: the page is drawn, not filled */
+  fill: none;}
+
+.upl-page-ext {
+  fill: #fff;
+  font-family: var(--font-ui);
+  /* size is the <text>'s own fontSize, in the icon's units */
+  font-weight: 500;
+  letter-spacing: 0em;}
+
+.upl-label {
+  max-width: 76px;
+  overflow: hidden;
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--fill-on, #17181a) 72%, var(--fill-slab, #ffffff));
+  letter-spacing: 0em;}
+
+/* the tray sits on the STAGE, not on the block, so when Fill
+   takes the block the other way from the page its names would be
+   coloured for the wrong ground — light grey on a light stage.
+   Across that split they take the page's own ink instead. */
+/* the page's outline goes with its name, the same colour */
+:root:not([data-theme="dark"]) [data-fill="dark"] .upl-label { color: color-mix(in srgb, var(--fill-on, var(--ink)) 70%, #ffffff); }
+
+:root:not([data-theme="dark"]) [data-fill="dark"] .upl-page-line { stroke: color-mix(in srgb, var(--fill-on, var(--ink)) 70%, #ffffff); }
+
+:root[data-theme="dark"] [data-fill="light"] .upl-label { color: color-mix(in srgb, #f4f3f1 70%, var(--fill-on, var(--ink))); }
+
+:root[data-theme="dark"] [data-fill="light"] .upl-page-line { stroke: color-mix(in srgb, #f4f3f1 70%, var(--fill-on, var(--ink))); }
+
+/* Dark mode theme refinements */
+:root.dark .upl,
+:root[data-theme="dark"] .upl {
+  --signal: #60a5fa;
+}
+
+@keyframes upl-gulp {
+  0% { scale: 1.02; }
+  35% { scale: 0.985; }
+  70% { scale: 1.006; }
+  100% { scale: 1; }}
+
+@keyframes upl-open { 40% { scale: 1.08; } }
+
+@keyframes upl-land { from { opacity: 0; scale: 0.85; translate: 0 10px; } }
+
+@keyframes upl-pop { from { scale: 0; } }
+
+@keyframes upl-back { from { scale: 0.7; opacity: 0; } }
 
 

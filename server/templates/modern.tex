@@ -1,0 +1,71 @@
+% Template: Modern Minimal
+% ResumeFit Built-in Template
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.6in,bottom=0.6in,left=0.7in,right=0.7in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{multicol}
+
+\definecolor{navyblue}{RGB}{23,55,94}
+
+\titleformat{\section}{\color{navyblue}\large\bfseries\scshape}{}{0em}{}[{\color{navyblue}\titlerule[0.5pt]}]
+\titlespacing{\section}{0pt}{8pt}{4pt}
+
+\setlist[itemize]{leftmargin=*,topsep=1pt,itemsep=1pt,parsep=0pt,label={\textbullet}}
+\hypersetup{colorlinks=true,linkcolor=navyblue,urlcolor=navyblue}
+\pagestyle{empty}
+
+\begin{document}
+
+%% SLOT: HEADER
+{\centering
+  {\Huge\bfseries\color{navyblue} Jane Smith}\\[5pt]
+  {\small jane.smith@email.com $\;\cdot\;$ (555) 987-6543 $\;\cdot\;$ Austin, TX $\;\cdot\;$ \href{https://github.com/janesmith}{github.com/janesmith}}
+  \par
+}
+\vspace{6pt}
+
+%% SLOT: SUMMARY
+\section{Summary}
+Data-driven software engineer with 6+ years building scalable backend systems and leading high-performance engineering teams. Passionate about clean architecture, developer tooling, and measurable outcomes.
+
+%% SLOT: EXPERIENCE
+\section{Experience}
+
+{\bfseries Staff Engineer} \hfill {\small Jul 2022 -- Present}\\
+{\itshape Acme Inc., Austin, TX}
+\begin{itemize}
+  \item Designed event-driven architecture handling 5M messages/day with 99.99\% uptime
+  \item Mentored 6 junior engineers; 4 promoted within 18 months
+\end{itemize}
+
+{\bfseries Senior Engineer} \hfill {\small Mar 2019 -- Jun 2022}\\
+{\itshape DataFlow Ltd., Remote}
+\begin{itemize}
+  \item Migrated monolith to service-oriented architecture, reducing time-to-market by 35\%
+  \item Implemented observability stack (Prometheus, Grafana) cutting MTTR by 50\%
+\end{itemize}
+
+%% SLOT: EDUCATION
+\section{Education}
+
+{\bfseries M.S. Computer Science} \hfill {\small 2019}\\
+University of Texas at Austin
+
+{\bfseries B.S. Computer Science} \hfill {\small 2017}\\
+Texas A\&M University
+
+%% SLOT: SKILLS
+\section{Technical Skills}
+\begin{itemize}[label={}, leftmargin=0pt]
+  \item \textbf{Languages:} Python, Go, Rust, TypeScript, SQL
+  \item \textbf{Cloud \& Infra:} AWS (ECS, RDS, Lambda), GCP, Terraform, Kubernetes
+  \item \textbf{Tools:} Kafka, Redis, Elasticsearch, GitHub Actions, Datadog
+\end{itemize}
+
+\end{document}

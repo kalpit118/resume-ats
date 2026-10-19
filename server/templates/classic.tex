@@ -1,0 +1,66 @@
+% Template: Classic Professional
+% ResumeFit Built-in Template
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{times}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{parskip}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing{\section}{0pt}{6pt}{4pt}
+
+\setlist[itemize]{leftmargin=1em, topsep=2pt, itemsep=1pt, parsep=0pt}
+
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=black}
+
+\pagestyle{empty}
+
+\begin{document}
+
+%% SLOT: HEADER
+%% Replace the name, contact info below with actual candidate data
+{\centering
+  {\Large\bfseries John Doe}\\[4pt]
+  john.doe@email.com $\cdot$ (555) 123-4567 $\cdot$ New York, NY $\cdot$ \href{https://linkedin.com/in/johndoe}{linkedin.com/in/johndoe}
+  \par
+}
+\vspace{4pt}
+
+%% SLOT: SUMMARY
+\section{Professional Summary}
+An accomplished professional with extensive experience delivering impactful results in fast-paced environments. Proven track record of leading cross-functional teams and driving organizational success.
+
+%% SLOT: EXPERIENCE
+\section{Experience}
+
+\textbf{Senior Software Engineer} \hfill Jan 2021 -- Present\\
+\textit{Tech Corp, New York, NY}
+\begin{itemize}
+  \item Spearheaded development of a microservices architecture reducing latency by 40\%
+  \item Led a team of 8 engineers to deliver the flagship product on schedule
+\end{itemize}
+
+\textbf{Software Engineer} \hfill Jun 2018 -- Dec 2020\\
+\textit{StartupCo, San Francisco, CA}
+\begin{itemize}
+  \item Built and maintained RESTful APIs serving 2M+ daily active users
+  \item Improved CI/CD pipeline reducing deployment time by 60\%
+\end{itemize}
+
+%% SLOT: EDUCATION
+\section{Education}
+
+\textbf{Bachelor of Science in Computer Science} \hfill May 2018\\
+University of California, Berkeley
+
+%% SLOT: SKILLS
+\section{Skills}
+\textbf{Languages:} Python, Java, TypeScript, Go \\
+\textbf{Frameworks:} React, Node.js, Spring Boot, FastAPI \\
+\textbf{Tools:} Docker, Kubernetes, AWS, PostgreSQL, Redis
+
+\end{document}

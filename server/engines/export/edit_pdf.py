@@ -1,3 +1,22 @@
+"""
+================================================================================
+[ARCHIVED / DEPRECATED] In-Place PDF Redaction & Overlay Tool (PyMuPDF / fitz)
+================================================================================
+Historical Context:
+    Used in early versions of ResumeFit to perform in-place text redactions and
+    overlays directly onto user-uploaded binary PDFs.
+
+Why Deactivated:
+    - ResumeFit has completely migrated to structured LaTeX templates compiled
+      via the Texapi cloud service (https://texapi.ovh).
+    - Preserves typesetting quality, eliminates misalignment issues, and removes
+      the requirement for a Python 3 runtime and PyMuPDF C-binaries on the server.
+
+Status:
+    Retained for architectural reference. The calling code in `server/routes/export.ts`
+    is commented out.
+================================================================================
+"""
 import sys
 import json
 import re

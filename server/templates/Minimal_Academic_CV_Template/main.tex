@@ -1,0 +1,48 @@
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% In the file EDITABLE-setup/setup.tex
+% you can change all sorts of stuff like 
+% your name, distances between different elements,
+% colors of things, sizes, etc.
+
+% Then the folder EDITABLE-sections contains files,
+% and each file corresponds to a section.
+% You can add/remove/edit the files.
+% When a section has been either added or removed,
+% the corresponding change needs to be included in 
+% the file EDITABLE-sections/0-all.tex.
+% This file includes the structure of the whole CV.
+% Finally, the file EDITABLE-sections/bibliography.bib
+% contain bibtex references.
+
+% There are a few commands for a CV segment that
+% can be included in the CV sections:
+
+% * CVPlainTextField
+% Options: plaintext
+
+% * \CVExperienceField
+% Option: dates, title, uppercasetitle (yes/no), subtitle, location, titlecomment, bulletlist
+
+% * CVLabeledTextField
+% Options: labeltext, content
+
+% * CVLabeledBulletListField
+% Options: labeltext, bulletlistcontent
+
+% * CVKeywordReferences
+% Options: labeltext, keyword
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\input{setup/packages.tex}
+
+\begin{document}
+    \input{fields-cv/all.tex}
+    \nametitle{\topname}{\bottomname}
+    \input{EDITABLE-sections/0-all.tex}
+\end{document}

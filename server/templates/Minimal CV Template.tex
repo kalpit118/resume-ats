@@ -1,0 +1,118 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[bottom=0.8in,top=0.8in, left=0.8in,right=0.8in]{geometry}
+
+% non-numbered pages
+\pagestyle{empty} 
+
+%%%%%%%%%%% pdflatex %%%%%%%%%
+\usepackage[T1]{fontenc}
+\usepackage{newtxmath,newtxtext}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%% xelatex %%%%%%%%%%%%%%
+% \usepackage{fontspec}
+% \setmainfont{Times New Roman}
+% \setmainfont{TeX Gyre Termes}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%A Few Useful Packages
+\usepackage{parskip}
+\usepackage{titlesec}	
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{hyperref}
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\hypersetup{colorlinks,breaklinks,urlcolor={linkcolour!90}, linkcolor={linkcolour!90}}
+
+% line spacing
+\linespread{1.1}
+
+% section reformatting
+\titleformat{\section}{\color{black} \large}{}{0em}{}[\color{black}]
+\titlespacing{\section}{0pt}{3pt}{3pt}
+
+\newcommand{\sectitle}[1]{
+    \vspace{1.5ex}
+    \section{#1}
+    \vspace{-3ex}
+    \noindent\rule{\textwidth}{0.7pt}
+    \vspace{-4ex}
+}
+
+% new text bold style
+\newsavebox\CBox
+\def\textBF#1{\sbox\CBox{#1}\resizebox{\wd\CBox}{\ht\CBox}{\textcolor{linkcolour}{{#1}}}}
+\parindent=0pt
+
+% dummy text
+\newcommand{\mylipsum}{Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit,
+vestibulum ut, placerat ac, adipiscing vitae, felis.}
+
+%-------------------- Begin document ----------------------
+\begin{document}
+
+%-------------------- Title section ----------------------
+\begin{minipage}{\textwidth}
+    \vspace{7ex}
+        \par{
+        \centering
+        \vspace{-0.9in}
+            % \textcolor{black}{\emph{Curriculum Vitae}}\\
+            \textcolor{linkcolour}{\Large YOUR NAME}
+        \par}
+\end{minipage}
+
+%-------------------- Header ----------------------
+\begin{center}
+    Address, YY, XX \,$\cdot$\, \href{mailto:email@address.com}{email@address.com} \,$\cdot$\, \href{https://mywebsite.com/}{mywebsite.com}
+\end{center}
+
+%%% Short paragraph
+My brief description.~\mylipsum
+
+%-------------------- SECTIONS ----------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sectitle{Technical Skills}
+
+\textBF{Programming skills} --- \mylipsum
+
+\textBF{Data Analysis} --- \mylipsum
+
+\textBF{Visualization} --- \mylipsum
+
+\textBF{Git} --- \mylipsum
+
+\textBF{Unix} --- \mylipsum
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sectitle{Core Competencies}
+
+\textBF{Leadership} --- \mylipsum
+
+\textBF{Problem-solving} --- \mylipsum
+
+\textBF{Communication} --- \mylipsum
+
+\textBF{Writing} --- \mylipsum
+
+\textBF{Languages} --- \mylipsum
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sectitle{Positions}
+
+\textBF{First Position} --- XYZ Institute \hfill XX 2000 --- Present
+
+\mylipsum
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\sectitle{Education}
+
+\mylipsum
+
+\textBF{Ph.D.} in YYY -- {XYZ University, CT}\hfill {XX 2000 --- YY XXXX} 
+
+\textBF{B.S.} in XXX -- {XYZ University, CT}  \hfill {XX 2000 --- YY XXXX} 
+
+\end{document}
