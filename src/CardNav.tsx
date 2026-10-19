@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
+import { ArrowUpRight } from 'lucide-react';
 import './CardNav.css';
 
 export interface CardNavLink {
@@ -565,8 +564,8 @@ export const CardNav: React.FC<CardNavProps> = ({
                         },
                         <>
                           <span className={ARROW} aria-hidden="true">
-                            <HugeiconsIcon className={ARROW_OUT} icon={ArrowUpRight01Icon} size={14} strokeWidth={2} />
-                            <HugeiconsIcon className={ARROW_IN} icon={ArrowUpRight01Icon} size={14} strokeWidth={2} />
+                            <ArrowUpRight className={ARROW_OUT} size={14} strokeWidth={2} />
+                            <ArrowUpRight className={ARROW_IN} size={14} strokeWidth={2} />
                           </span>
                           {link.label}
                         </>
