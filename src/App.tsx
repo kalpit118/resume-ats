@@ -4,6 +4,50 @@ import ThemeToggle from './ThemeToggle';
 import CustomSelect from './CustomSelect';
 import ModelLogo from './ModelLogo';
 import UploadDropzone from './UploadDropzone';
+import ResumeFitLogo from './ResumeFitLogo';
+import CardNav, { type CardNavItem } from './CardNav';
+import HeroSection from './HeroSection';
+
+const SAMPLE_RESUME_TEXT = `Alex Morgan
+alex.morgan@email.com | (555) 234-5678 | San Francisco, CA | github.com/alexmorgan | linkedin.com/in/alexmorgan
+
+SUMMARY
+Senior Software Engineer with 6+ years of experience designing and scaling distributed systems, cloud infrastructure, and modern web applications. Proven track record of optimizing latency, driving microservice migrations, and mentoring engineering teams.
+
+EXPERIENCE
+Staff Software Engineer | CloudScale Systems | 2022 – Present
+- Architected and deployed microservices backend processing 45M+ daily requests with 99.99% uptime using TypeScript, Node.js, and Go.
+- Led migration from monolithic architecture to Kubernetes-orchestrated containers on AWS (EKS), reducing infrastructure costs by 28%.
+- Optimized PostgreSQL queries and Redis caching layers, cutting 95th percentile API latency from 240ms to 42ms.
+- Mentored 8 junior and mid-level engineers, establishing engineering design doc standards and CI/CD best practices.
+
+Senior Full Stack Engineer | DataFlow Inc. | 2019 – 2022
+- Engineered high-throughput analytics dashboard in React, TypeScript, and GraphQL consumed by 12,000+ enterprise customers.
+- Built event-driven data ingestion pipeline utilizing Apache Kafka, processing 10,000 events/sec with sub-second delivery.
+- Spearheaded end-to-end automated testing suite with Playwright and Jest, increasing code coverage from 61% to 89%.
+
+EDUCATION & SKILLS
+B.S. in Computer Science | University of California, Berkeley
+Languages & Tech: TypeScript, JavaScript, Go, Python, React, Next.js, Node.js, GraphQL, PostgreSQL, Redis, Docker, Kubernetes, AWS, Kafka.`;
+
+const SAMPLE_JD_TEXT = `Senior / Staff Full-Stack Engineer — Distributed Platform
+Company: Apex Cloud Technologies
+
+About the Role:
+We are looking for an experienced Senior Software Engineer to help build our next-generation cloud infrastructure platform. You will be responsible for designing high-throughput APIs, scaling microservices, and crafting delightful frontend experiences for mission-critical enterprise workflows.
+
+Key Responsibilities:
+- Design, build, and maintain robust, scalable microservices handling millions of transactions daily.
+- Partner with product and design teams to build responsive, accessible web interfaces in React and TypeScript.
+- Optimize database performance (PostgreSQL, Redis) and troubleshoot distributed system bottlenecks.
+- Champion engineering excellence, infrastructure-as-code (Kubernetes, AWS), and rigorous automated testing.
+
+Required Qualifications:
+- 5+ years of software engineering experience building production systems at scale.
+- Strong proficiency in modern TypeScript/JavaScript and backend services (Node.js, Go, or similar).
+- Hands-on experience with containerization, Kubernetes, and cloud platforms (AWS, GCP).
+- Deep understanding of distributed caching, SQL database optimization, and high-concurrency architectures.
+- Passion for clean code, automated testing, and zero-downtime deployments.`;
 
 // Strips LaTeX commands & macros so plain text is cleanly presented in the UI
 function cleanLatex(s: string): string {
@@ -289,17 +333,26 @@ function App() {
       formData.append('aiApiKey', currentApiKey);
       formData.append('aiModel', aiModel);
 
-      const response = await fetch('/api/analyze', {
+      let response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       });
+
+      // If backend was still initializing (503), wait 1.5s and retry once automatically
+      if (response.status === 503) {
+        await new Promise((r) => setTimeout(r, 1500));
+        response = await fetch('/api/analyze', {
+          method: 'POST',
+          body: formData,
+        });
+      }
 
       let data: any = null;
       try {
         data = await response.json();
       } catch (jsonErr) {
         if (!response.ok) {
-          throw new Error(`Server returned ${response.status} ${response.statusText}. Please ensure the backend server is running on port 3001.`);
+          throw new Error(`Server returned ${response.status} ${response.statusText}.`);
         }
         throw jsonErr;
       }
@@ -533,42 +586,178 @@ function App() {
   };
 
 
+  // Sync dark theme for CardNav
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const navItems: CardNavItem[] = [
+    {
+      label: 'How it Works',
+      description: 'Mathematical ATS optimization and algorithmic resume alignment.',
+      links: [
+        {
+          label: 'Precision Matching',
+          onClick: () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+        {
+          label: 'Evidence Guard',
+          onClick: () => {
+            const el = document.querySelector('main');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }
+        },
+        {
+          label: 'Optimization Rules',
+          onClick: () => {
+            const el = document.querySelector('.card:last-child');
+            el?.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      ]
+    },
+    {
+      label: 'Pricing & Plans',
+      description: 'Simple, transparent options for job seekers and power users.',
+      links: [
+        {
+          label: 'Free Tier (Bring Your Own Key)',
+          onClick: () => {
+            handleOpenSettings();
+          }
+        },
+        {
+          label: 'LaTeX Template Gallery',
+          onClick: () => {
+            setIsTemplatePickerOpen(true);
+          }
+        },
+        {
+          label: 'Privacy Guarantee',
+          onClick: () => {
+            alert('Privacy Guarantee: ResumeFit processes files securely in memory and never stores your personal resume data.');
+          }
+        }
+      ]
+    },
+    {
+      label: 'Settings',
+      description: 'AI model configuration, API keys, and workspace options.',
+      links: [
+        {
+          label: 'AI Configuration',
+          onClick: () => {
+            handleOpenSettings();
+          }
+        },
+        {
+          label: 'Resume Templates',
+          onClick: () => {
+            setIsTemplatePickerOpen(true);
+          }
+        },
+        {
+          label: 'Toggle Dark / Light Mode',
+          onClick: () => {
+            const toggle = document.querySelector('.theme-toggle') as HTMLElement | null;
+            toggle?.click();
+          }
+        }
+      ]
+    }
+  ];
+
+  const handleStartOptimizing = () => {
+    const el = document.getElementById('optimizer-workspace');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      el.classList.add('highlight-section');
+      setTimeout(() => el.classList.remove('highlight-section'), 2000);
+    }
+  };
+
+  const handleTrySample = () => {
+    setResumeFile(null);
+    setResumeText(SAMPLE_RESUME_TEXT);
+    setJdText(SAMPLE_JD_TEXT);
+    const el = document.getElementById('optimizer-workspace');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      el.classList.add('highlight-section');
+      setTimeout(() => el.classList.remove('highlight-section'), 2000);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
       {/* Navigation */}
-      <nav style={{ borderBottom: '1px solid var(--color-border)', padding: 'var(--space-2) 0' }}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-            <div style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-secondary)', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontWeight: 'bold' }}>
-              R
-            </div>
-            <span className="text-small" style={{ fontWeight: 700, fontSize: '1.2rem' }}>Resume Optimizer</span>
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-            <a href="#" className="text-small" style={{ textDecoration: 'none', color: 'var(--color-text-muted)' }}>How it Works</a>
-            <a href="#" className="text-small" style={{ textDecoration: 'none', color: 'var(--color-text-muted)' }}>Pricing</a>
-            <button onClick={handleOpenSettings} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }} aria-label="Settings">
-              <Settings size={20} />
-            </button>
-            <ThemeToggle />
-          </div>
-        </div>
-      </nav>
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          padding: '14px 20px 4px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}
+      >
+        <CardNav
+          logo={<ResumeFitLogo height={28} />}
+          logoAlt="ResumeFit"
+          logoHref="#"
+          onLogoClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          items={navItems}
+          cardEffect="rise"
+          openOn="click"
+          theme={isDark ? 'dark' : 'light'}
+          surface="glass"
+          maxWidth={880}
+        >
+          <button
+            type="button"
+            onClick={handleOpenSettings}
+            className="card-nav__icon-btn"
+            aria-label="Settings"
+            title="AI Configuration & Settings"
+          >
+            <Settings size={18} />
+          </button>
+          <ThemeToggle />
+        </CardNav>
+      </header>
 
-      <main className="container section" style={{ flex: 1, paddingBottom: 'var(--space-8)' }}>
+      <main className="container" style={{ flex: 1, paddingBottom: 'var(--space-8)' }}>
         
-        {/* Header Section */}
-        <div style={{ marginBottom: 'var(--space-6)', maxWidth: '800px' }} className="animate-fade-up">
-          <h1 className="text-hero" style={{ marginBottom: 'var(--space-2)' }}>
-            Precision match <br/>your resume.
-          </h1>
-          <p className="text-body" style={{ color: 'var(--color-text-muted)', fontSize: '1.25rem' }}>
-            Mathematical optimization for your career. We analyze the job description and restructure your experience without fabricating qualifications.
-          </p>
-        </div>
+        {/* Animated & Accessible Hero Section */}
+        <HeroSection
+          onStartOptimizing={handleStartOptimizing}
+          onTrySample={handleTrySample}
+        />
 
         {/* Two Column Layout for Inputs */}
-        <div className="grid-12 animate-fade-up delay-100" style={{ gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-4)' }}>
+        <div 
+          id="optimizer-workspace" 
+          className="grid-12 animate-fade-up delay-100" 
+          style={{ gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--space-4)', scrollMarginTop: '110px' }}
+        >
           
           {/* Left Column: Inputs (8 cols) */}
           <div style={{ gridColumn: 'span 8' }}>

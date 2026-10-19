@@ -1,0 +1,204 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   ResumeFit — Kinetic Precision Hero Section
+   Crafted following hero-section, accessible-animation, and generative_ui
+   Bespoke, human-crafted design with zero AI template clichés.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.rf-hero {
+  position: relative;
+  width: 100%;
+  padding: 1.25rem 0 2rem 0;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .rf-hero {
+    padding: 1.5rem 0 2.5rem 0;
+  }
+}
+
+/* ── Interactive Canvas Backdrop ──────────────────────────────────────── */
+.rf-hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+/* ── Content Container (Spacious, Confident, Full-Width) ──────────────── */
+.rf-hero__container {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  margin: 0;
+  text-align: left;
+}
+
+/* Meaningful Status Tag */
+.rf-hero__mono-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+  user-select: none;
+}
+
+:root.dark .rf-hero__mono-tag {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #a3a3a3;
+}
+
+.rf-hero__tag-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  box-shadow: 0 0 6px #16a34a;
+  flex-shrink: 0;
+}
+
+:root.dark .rf-hero__tag-beacon {
+  background-color: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+/* Headline: Unconstrained & Impactful */
+.rf-hero__title {
+  font-size: clamp(2.75rem, 5.5vw, 4.4rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  color: var(--color-text-main);
+  margin: 0 0 1.35rem 0;
+}
+
+/* Specular Kinetic Light Sweep on "Precision match" */
+.rf-hero__sweep-text {
+  background: linear-gradient(
+    95deg,
+    #0f172a 0%,
+    #2563eb 25%,
+    #38bdf8 50%,
+    #0f172a 75%,
+    #2563eb 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+:root.dark .rf-hero__sweep-text {
+  background: linear-gradient(
+    95deg,
+    #ffffff 0%,
+    #38bdf8 25%,
+    #818cf8 50%,
+    #ffffff 75%,
+    #38bdf8 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rf-hero__sweep-text {
+    animation: rf-light-sweep 8s ease-in-out infinite;
+  }
+}
+
+@keyframes rf-light-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Subheadline */
+.rf-hero__subtitle {
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  max-width: 680px;
+  margin: 0 0 1.85rem 0;
+  font-weight: 400;
+}
+
+/* Meaningful Value Ribbon */
+.rf-hero__specs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 2rem;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.35rem;
+  margin-top: 0.5rem;
+}
+
+.rf-spec-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.005em;
+  font-weight: 450;
+}
+
+.rf-spec-item__mark {
+  color: #16a34a;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+:root.dark .rf-spec-item__mark {
+  color: #4ade80;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ACCESSIBLE ANIMATION TIERS (WCAG 2.3.3 / C39 & accessible-animation skill)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-hero,
+  .rf-hero *,
+  .rf-hero *::before,
+  .rf-hero *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .rf-hero__sweep-text {
+    animation: none !important;
+    background-position: 0% 50% !important;
+  }
+
+  .rf-hero__tag-beacon {
+    animation: none !important;
+  }
+}

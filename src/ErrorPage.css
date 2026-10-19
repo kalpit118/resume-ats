@@ -53,6 +53,11 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.error-page-logo:hover {
+  opacity: 0.85;
 }
 
 .error-page-logo-icon {

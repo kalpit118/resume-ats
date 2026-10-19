@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import FuzzyText, { type FuzzyTextProps } from './FuzzyText';
 import ThemeToggle from './ThemeToggle';
+import ResumeFitLogo from './ResumeFitLogo';
 import { navigate } from './navigation';
 import './ErrorPage.css';
 
@@ -296,9 +297,8 @@ export const ErrorPage: React.FC<ErrorPageProps> = ({
       {/* Top Header / Nav */}
       <header className="error-page-nav">
         <div className="container error-page-nav-inner">
-          <div className="error-page-logo" onClick={handleHomeClick} role="button" tabIndex={0}>
-            <div className="error-page-logo-icon">R</div>
-            <span className="error-page-logo-text">Resume Optimizer</span>
+          <div className="error-page-logo" onClick={handleHomeClick} role="button" tabIndex={0} aria-label="ResumeFit Home">
+            <ResumeFitLogo height={28} />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>

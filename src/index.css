@@ -125,7 +125,38 @@
   --tpl-upload-hover-bg: #363636;
 
   --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
-  --shadow-lift: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ── ResumeFit Brand Logo ────────────────────────────────────────────── */
+.resumefit-logo {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.resumefit-logo img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+.resumefit-logo-light {
+  display: block !important;
+}
+
+.resumefit-logo-dark {
+  display: none !important;
+}
+
+:root.dark .resumefit-logo-light,
+html.dark .resumefit-logo-light {
+  display: none !important;
+}
+
+:root.dark .resumefit-logo-dark,
+html.dark .resumefit-logo-dark {
+  display: block !important;
 }
 
 /* ── Theme Toggle Switch ── */
